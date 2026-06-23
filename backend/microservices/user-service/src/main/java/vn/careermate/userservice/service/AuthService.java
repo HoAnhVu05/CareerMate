@@ -71,7 +71,7 @@ public class AuthService {
                 .fullName(request.getFullName())
                 .phone(request.getPhone())
                 .role(role)
-                .status(User.UserStatus.ACTIVE) // Changed from PENDING - database constraint issue
+                .status(User.UserStatus.PENDING)
                 .emailVerified(false)
                 .build();
 
