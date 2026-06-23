@@ -180,6 +180,9 @@ public class AuthService {
         } catch (org.springframework.security.authentication.LockedException e) {
             saveLoginLog(null, request.getEmail(), "LOCKED", "Tài khoản bị khóa");
             throw new RuntimeException("Tài khoản đã bị khóa do nhập sai quá nhiều lần");
+        } catch (org.springframework.security.authentication.DisabledException e) {
+            saveLoginLog(null, request.getEmail(), "DISABLED", "Tài khoản chưa kích hoạt");
+            throw new RuntimeException("PENDING_ACTIVATION: Tài khoản chưa được kích hoạt. Vui lòng xác thực OTP.");
         } catch (RuntimeException e) {
             saveLoginLog(null, request.getEmail(), "FAILED", e.getMessage());
             throw e;

@@ -24,7 +24,16 @@ export default function MobileLogin() {
             else if (role === 'ADMIN') navigate('/mobile/dashboard');
             else navigate('/mobile/dashboard');
         } catch (err) {
-            setError(err.response?.data?.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
+            const errMsg = err.response?.data?.message || '';
+            if (errMsg.includes('PENDING_ACTIVATION')) {
+                const cleanMsg = errMsg.replace('PENDING_ACTIVATION: ', '');
+                setError(cleanMsg + ' Đang chuyển hướng đến trang xác thực OTP...');
+                setTimeout(() => {
+                    navigate(`/verify-otp?email=${encodeURIComponent(email)}&type=REGISTRATION`);
+                }, 2000);
+            } else {
+                setError(errMsg || 'Đăng nhập thất bại. Vui lòng thử lại.');
+            }
         } finally {
             setLoading(false);
         }
