@@ -29,7 +29,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256M
+          memory: 128M
 
   redis:
     image: redis:7-alpine
@@ -48,7 +48,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 96M
+          memory: 64M
 
   # ────────────────────────────────────────────────────────
   #  SERVICE DISCOVERY
@@ -64,7 +64,7 @@ services:
       - "8761:8761"
     environment:
       - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
-      - JAVA_TOOL_OPTIONS=-Xmx192m -Xms64m -XX:+UseG1GC
+      - JAVA_TOOL_OPTIONS=-Xmx96m -Xms48m -XX:+UseG1GC
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8761/actuator/health || exit 1"]
       interval: 30s
@@ -74,7 +74,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256M
+          memory: 128M
 
   # ────────────────────────────────────────────────────────
   #  API GATEWAY
@@ -90,14 +90,14 @@ services:
       - "8080:8080"
     environment:
       - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
-      - JAVA_TOOL_OPTIONS=-Xmx192m -Xms64m -XX:+UseG1GC
+      - JAVA_TOOL_OPTIONS=-Xmx96m -Xms48m -XX:+UseG1GC
     depends_on:
       eureka-server:
         condition: service_healthy
     deploy:
       resources:
         limits:
-          memory: 256M
+          memory: 128M
 
   # ────────────────────────────────────────────────────────
   #  MICROSERVICES
@@ -123,7 +123,7 @@ services:
       - BASE_URL=http://${EC2_PUBLIC_IP:-localhost}:8080
       - STORAGE_PATH=/app/uploads
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-      - JAVA_TOOL_OPTIONS=-Xmx256m -Xms128m -XX:+UseG1GC
+      - JAVA_TOOL_OPTIONS=-Xmx128m -Xms64m -XX:+UseG1GC
     volumes:
       - user_uploads:/app/uploads
     depends_on:
@@ -134,7 +134,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 320M
+          memory: 192M
 
   job-service:
     build:
@@ -150,7 +150,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD:-CareerMate2024!}
       - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
       - JWT_SECRET=${JWT_SECRET:-5Ug/98ITtqMrJqakx4zPmlUTDmqhqqsC2MNEfE4NZ4w=}
-      - JAVA_TOOL_OPTIONS=-Xmx256m -Xms128m -XX:+UseG1GC
+      - JAVA_TOOL_OPTIONS=-Xmx128m -Xms64m -XX:+UseG1GC
     depends_on:
       postgres:
         condition: service_healthy
@@ -159,7 +159,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 320M
+          memory: 192M
 
   content-service:
     build:
@@ -176,7 +176,7 @@ services:
       - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
       - JWT_SECRET=${JWT_SECRET:-5Ug/98ITtqMrJqakx4zPmlUTDmqhqqsC2MNEfE4NZ4w=}
       - STORAGE_PATH=/app/uploads
-      - JAVA_TOOL_OPTIONS=-Xmx192m -Xms64m -XX:+UseG1GC
+      - JAVA_TOOL_OPTIONS=-Xmx96m -Xms48m -XX:+UseG1GC
     volumes:
       - content_uploads:/app/uploads
     depends_on:
@@ -187,7 +187,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256M
+          memory: 128M
 
   notification-service:
     build:
@@ -207,14 +207,14 @@ services:
       - MAIL_PORT=${MAIL_PORT:-587}
       - MAIL_USERNAME=${MAIL_USERNAME}
       - MAIL_PASSWORD=${MAIL_PASSWORD}
-      - JAVA_TOOL_OPTIONS=-Xmx128m -Xms64m -XX:+UseG1GC
+      - JAVA_TOOL_OPTIONS=-Xmx96m -Xms48m -XX:+UseG1GC
     depends_on:
       eureka-server:
         condition: service_healthy
     deploy:
       resources:
         limits:
-          memory: 192M
+          memory: 128M
 
   learning-service:
     build:
@@ -230,7 +230,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD:-CareerMate2024!}
       - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
       - JWT_SECRET=${JWT_SECRET:-5Ug/98ITtqMrJqakx4zPmlUTDmqhqqsC2MNEfE4NZ4w=}
-      - JAVA_TOOL_OPTIONS=-Xmx192m -Xms64m -XX:+UseG1GC
+      - JAVA_TOOL_OPTIONS=-Xmx96m -Xms48m -XX:+UseG1GC
     depends_on:
       postgres:
         condition: service_healthy
@@ -239,7 +239,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256M
+          memory: 128M
 
   ai-service:
     build:
@@ -256,7 +256,7 @@ services:
       - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
       - JWT_SECRET=${JWT_SECRET:-5Ug/98ITtqMrJqakx4zPmlUTDmqhqqsC2MNEfE4NZ4w=}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - JAVA_TOOL_OPTIONS=-Xmx256m -Xms128m -XX:+UseG1GC
+      - JAVA_TOOL_OPTIONS=-Xmx128m -Xms64m -XX:+UseG1GC
     depends_on:
       postgres:
         condition: service_healthy
@@ -265,7 +265,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 320M
+          memory: 192M
 
   admin-service:
     build:
@@ -281,7 +281,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD:-CareerMate2024!}
       - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
       - JWT_SECRET=${JWT_SECRET:-5Ug/98ITtqMrJqakx4zPmlUTDmqhqqsC2MNEfE4NZ4w=}
-      - JAVA_TOOL_OPTIONS=-Xmx128m -Xms64m -XX:+UseG1GC
+      - JAVA_TOOL_OPTIONS=-Xmx96m -Xms48m -XX:+UseG1GC
     depends_on:
       postgres:
         condition: service_healthy
@@ -290,7 +290,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 192M
+          memory: 128M
 
   # ────────────────────────────────────────────────────────
   #  FRONTEND
