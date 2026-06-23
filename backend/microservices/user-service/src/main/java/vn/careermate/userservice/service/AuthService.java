@@ -346,6 +346,36 @@ public class AuthService {
             log.error("Failed to parse Google token locally: {}", e.getMessage());
             throw new RuntimeException("Failed to parse Google ID token: " + e.getMessage());
         }
+    }    @Transactional
+    public void resendOtp(String email, String type) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Email không tồn tại"));
+
+        OtpToken.OtpType otpType;
+        try {
+            otpType = OtpToken.OtpType.valueOf(type.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Loại OTP không hợp lệ");
+        }
+
+        // Delete existing OTP token of this type if any
+        otpTokenRepository.deleteByUserIdAndType(user.getId(), otpType);
+
+        // Generate new OTP
+        String otp = String.valueOf((int) (Math.random() * 900000) + 100000); // 6 digits
+        OtpToken otpToken = OtpToken.builder()
+                .user(user)
+                .otpHash(passwordEncoder.encode(otp))
+                .type(otpType)
+                .expiresAt(LocalDateTime.now().plusMinutes(5))
+                .build();
+        otpTokenRepository.save(otpToken);
+
+        // Send email
+        String subject = otpType == OtpToken.OtpType.REGISTRATION 
+                ? "Mã xác thực đăng ký tài khoản (Gửi lại)" 
+                : "Yêu cầu đặt lại mật khẩu của bạn (Gửi lại)";
+        emailService.sendOtpEmail(user.getEmail(), otp, subject);
     }
 
     public AuthResponse refreshToken(String refreshToken) {

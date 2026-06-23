@@ -172,6 +172,11 @@ class CareerMateAPI {
     return response.data;
   }
 
+  async resendOtp(email, type) {
+    const response = await this.client.post(`/auth/resend-otp?email=${email}&type=${type}`);
+    return response.data;
+  }
+
   async forgotPassword(email) {
     const response = await this.client.post(`/auth/forgot-password?email=${email}`);
     return response.data;

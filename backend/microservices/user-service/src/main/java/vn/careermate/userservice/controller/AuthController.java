@@ -37,6 +37,12 @@ public class AuthController {
         return ResponseEntity.ok(authService.verifyOtp(email, otp, type));
     }
 
+    @PostMapping("/resend-otp")
+    public ResponseEntity<Void> resendOtp(@RequestParam String email, @RequestParam String type) {
+        authService.resendOtp(email, type);
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/forgot-password")
     public ResponseEntity<Void> forgotPassword(@RequestParam String email) {
         authService.forgotPassword(email);

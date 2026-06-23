@@ -71,6 +71,20 @@ export default function OtpVerification() {
         }
     };
 
+    const handleResend = async () => {
+        setError('');
+        setLoading(true);
+        try {
+            await api.resendOtp(email, type);
+            setTimer(300); // Reset timer to 5 minutes
+            alert('Mã OTP mới đã được gửi lại vào email của bạn.');
+        } catch (err) {
+            setError(err.response?.data?.message || 'Không thể gửi lại mã OTP. Vui lòng thử lại sau.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const formatTime = (seconds) => {
         const min = Math.floor(seconds / 60);
         const sec = seconds % 60;
@@ -148,7 +162,14 @@ export default function OtpVerification() {
 
                         <div className="text-center space-y-4">
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Mã hết hạn sau <span className="text-[#5f33e1] animate-pulse">{formatTime(timer)}</span></p>
-                            <button type="button" className="text-xs font-bold text-[#5f33e1] hover:underline underline-offset-4 decoration-2 transition-all">Chưa nhận được mã? Gửi lại</button>
+                            <button 
+                                type="button" 
+                                onClick={handleResend}
+                                disabled={loading}
+                                className="text-xs font-bold text-[#5f33e1] hover:underline underline-offset-4 decoration-2 transition-all disabled:opacity-50"
+                            >
+                                Chưa nhận được mã? Gửi lại
+                            </button>
                         </div>
 
                         <button
