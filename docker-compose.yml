@@ -1,0 +1,322 @@
+version: '3.8'
+
+# ============================================================
+# CareerMate – Docker Compose for AWS Free Tier (t2.micro)
+# Build context cho tất cả backend services là ./backend/microservices/
+# ============================================================
+
+services:
+  # ────────────────────────────────────────────────────────
+  #  INFRASTRUCTURE
+  # ────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:14-alpine
+    container_name: careermate-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: careermate_db
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-CareerMate2024!}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres}"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  redis:
+    image: redis:7-alpine
+    container_name: careermate-redis
+    restart: unless-stopped
+    command: redis-server --maxmemory 64mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 96M
+
+  # ────────────────────────────────────────────────────────
+  #  SERVICE DISCOVERY
+  # ────────────────────────────────────────────────────────
+  eureka-server:
+    build:
+      context: ./backend/microservices
+      dockerfile: eureka-server/Dockerfile
+    image: careermate/eureka-server:latest
+    container_name: careermate-eureka
+    restart: unless-stopped
+    ports:
+      - "8761:8761"
+    environment:
+      - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
+      - JAVA_TOOL_OPTIONS=-Xmx192m -Xms64m -XX:+UseG1GC
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8761/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  # ────────────────────────────────────────────────────────
+  #  API GATEWAY
+  # ────────────────────────────────────────────────────────
+  api-gateway:
+    build:
+      context: ./backend/microservices
+      dockerfile: api-gateway/Dockerfile
+    image: careermate/api-gateway:latest
+    container_name: careermate-gateway
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
+      - JAVA_TOOL_OPTIONS=-Xmx192m -Xms64m -XX:+UseG1GC
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  # ────────────────────────────────────────────────────────
+  #  MICROSERVICES
+  # ────────────────────────────────────────────────────────
+  user-service:
+    build:
+      context: ./backend/microservices
+      dockerfile: user-service/Dockerfile
+    image: careermate/user-service:latest
+    container_name: careermate-user-service
+    restart: unless-stopped
+    environment:
+      - SERVER_PORT=8081
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/careermate_db
+      - DB_USERNAME=${DB_USERNAME:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-CareerMate2024!}
+      - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
+      - JWT_SECRET=${JWT_SECRET:-5Ug/98ITtqMrJqakx4zPmlUTDmqhqqsC2MNEfE4NZ4w=}
+      - MAIL_HOST=${MAIL_HOST:-smtp.gmail.com}
+      - MAIL_PORT=${MAIL_PORT:-587}
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - BASE_URL=http://${EC2_PUBLIC_IP:-localhost}:8080
+      - STORAGE_PATH=/app/uploads
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - JAVA_TOOL_OPTIONS=-Xmx256m -Xms128m -XX:+UseG1GC
+    volumes:
+      - user_uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 320M
+
+  job-service:
+    build:
+      context: ./backend/microservices
+      dockerfile: job-service/Dockerfile
+    image: careermate/job-service:latest
+    container_name: careermate-job-service
+    restart: unless-stopped
+    environment:
+      - SERVER_PORT=8082
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/careermate_db
+      - DB_USERNAME=${DB_USERNAME:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-CareerMate2024!}
+      - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
+      - JWT_SECRET=${JWT_SECRET:-5Ug/98ITtqMrJqakx4zPmlUTDmqhqqsC2MNEfE4NZ4w=}
+      - JAVA_TOOL_OPTIONS=-Xmx256m -Xms128m -XX:+UseG1GC
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 320M
+
+  content-service:
+    build:
+      context: ./backend/microservices
+      dockerfile: content-service/Dockerfile
+    image: careermate/content-service:latest
+    container_name: careermate-content-service
+    restart: unless-stopped
+    environment:
+      - SERVER_PORT=8083
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/careermate_db
+      - DB_USERNAME=${DB_USERNAME:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-CareerMate2024!}
+      - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
+      - JWT_SECRET=${JWT_SECRET:-5Ug/98ITtqMrJqakx4zPmlUTDmqhqqsC2MNEfE4NZ4w=}
+      - STORAGE_PATH=/app/uploads
+      - JAVA_TOOL_OPTIONS=-Xmx192m -Xms64m -XX:+UseG1GC
+    volumes:
+      - content_uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  notification-service:
+    build:
+      context: ./backend/microservices
+      dockerfile: notification-service/Dockerfile
+    image: careermate/notification-service:latest
+    container_name: careermate-notification-service
+    restart: unless-stopped
+    environment:
+      - SERVER_PORT=8084
+      - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/careermate_db
+      - DB_USERNAME=${DB_USERNAME:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-CareerMate2024!}
+      - JWT_SECRET=${JWT_SECRET:-5Ug/98ITtqMrJqakx4zPmlUTDmqhqqsC2MNEfE4NZ4w=}
+      - MAIL_HOST=${MAIL_HOST:-smtp.gmail.com}
+      - MAIL_PORT=${MAIL_PORT:-587}
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - JAVA_TOOL_OPTIONS=-Xmx128m -Xms64m -XX:+UseG1GC
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 192M
+
+  learning-service:
+    build:
+      context: ./backend/microservices
+      dockerfile: learning-service/Dockerfile
+    image: careermate/learning-service:latest
+    container_name: careermate-learning-service
+    restart: unless-stopped
+    environment:
+      - SERVER_PORT=8085
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/careermate_db
+      - DB_USERNAME=${DB_USERNAME:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-CareerMate2024!}
+      - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
+      - JWT_SECRET=${JWT_SECRET:-5Ug/98ITtqMrJqakx4zPmlUTDmqhqqsC2MNEfE4NZ4w=}
+      - JAVA_TOOL_OPTIONS=-Xmx192m -Xms64m -XX:+UseG1GC
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  ai-service:
+    build:
+      context: ./backend/microservices
+      dockerfile: ai-service/Dockerfile
+    image: careermate/ai-service:latest
+    container_name: careermate-ai-service
+    restart: unless-stopped
+    environment:
+      - SERVER_PORT=8086
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/careermate_db
+      - DB_USERNAME=${DB_USERNAME:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-CareerMate2024!}
+      - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
+      - JWT_SECRET=${JWT_SECRET:-5Ug/98ITtqMrJqakx4zPmlUTDmqhqqsC2MNEfE4NZ4w=}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - JAVA_TOOL_OPTIONS=-Xmx256m -Xms128m -XX:+UseG1GC
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 320M
+
+  admin-service:
+    build:
+      context: ./backend/microservices
+      dockerfile: admin-service/Dockerfile
+    image: careermate/admin-service:latest
+    container_name: careermate-admin-service
+    restart: unless-stopped
+    environment:
+      - SERVER_PORT=8087
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/careermate_db
+      - DB_USERNAME=${DB_USERNAME:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-CareerMate2024!}
+      - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
+      - JWT_SECRET=${JWT_SECRET:-5Ug/98ITtqMrJqakx4zPmlUTDmqhqqsC2MNEfE4NZ4w=}
+      - JAVA_TOOL_OPTIONS=-Xmx128m -Xms64m -XX:+UseG1GC
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 192M
+
+  # ────────────────────────────────────────────────────────
+  #  FRONTEND
+  # ────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: ""
+    image: careermate/frontend:latest
+    container_name: careermate-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - api-gateway
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+
+# ────────────────────────────────────────────────────────
+#  VOLUMES
+# ────────────────────────────────────────────────────────
+volumes:
+  postgres_data:
+  redis_data:
+  user_uploads:
+  content_uploads:

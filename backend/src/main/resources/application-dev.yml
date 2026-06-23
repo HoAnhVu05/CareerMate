@@ -1,0 +1,33 @@
+# Development Profile Configuration
+# Sử dụng khi chạy: mvn spring-boot:run -Dspring-boot.run.profiles=dev
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/careermate_db
+    username: postgres
+    password: Aa1234
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: update  # Tự động tạo/update tables
+    show-sql: true  # Hiển thị SQL queries
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+# AI Service Configuration - OpenRouter
+ai:
+  openrouter:
+    api-key: ${OPENROUTER_API_KEY:your-openrouter-api-key}
+    model: ${OPENROUTER_MODEL:meta-llama/llama-3.2-3b-instruct:free} # OpenRouter model format (free model)
+    base-url: https://openrouter.ai/api/v1
+    timeout: 30000
+
+logging:
+  level:
+    root: INFO
+    vn.careermate: DEBUG
+    org.hibernate.SQL: DEBUG
+

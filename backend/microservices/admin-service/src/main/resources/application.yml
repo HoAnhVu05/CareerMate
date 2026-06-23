@@ -1,0 +1,46 @@
+server:
+  port: 8087
+
+spring:
+  application:
+    name: admin-service
+  
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/admin_service_db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:Aa1234}
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_schema: adminservice
+    open-in-view: false
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+    fetch-registry: true
+    register-with-eureka: true
+
+jwt:
+  secret: ${JWT_SECRET:5Ug/98ITtqMrJqakx4zPmlUTDmqhqqsC2MNEfE4NZ4w=}
+  expiration: 86400000
+
+logging:
+  level:
+    root: INFO
+    vn.careermate.adminservice: DEBUG
+  file:
+    name: logs/admin-service.log
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics

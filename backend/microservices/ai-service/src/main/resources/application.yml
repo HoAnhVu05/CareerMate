@@ -1,0 +1,64 @@
+server:
+  port: 8086
+
+spring:
+  application:
+    name: ai-service
+  
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/ai_service_db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:Aa1234}
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_schema: aiservice
+    open-in-view: false
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+    fetch-registry: true
+    register-with-eureka: true
+
+jwt:
+  secret: ${JWT_SECRET:5Ug/98ITtqMrJqakx4zPmlUTDmqhqqsC2MNEfE4NZ4w=}
+  expiration: 86400000
+
+ai:
+  provider: gemini
+  gemini:
+    api-key: ${GEMINI_API_KEY:your-gemini-api-key}
+    model: ${GEMINI_MODEL:gemini-2.5-flash}
+    base-url: https://generativelanguage.googleapis.com/v1beta
+    timeout: 120000
+  # Legacy OpenRouter config (kept for reference)  
+  openrouter:
+    api-key: ${OPENROUTER_API_KEY:your-openrouter-api-key}
+    model: ${OPENROUTER_MODEL:meta-llama/llama-3.2-3b-instruct:free}
+    base-url: https://openrouter.ai/api/v1
+    timeout: 60000
+
+logging:
+  level:
+    root: INFO
+    vn.careermate.aiservice: DEBUG
+    org.springframework.security: DEBUG
+  file:
+    name: logs/ai-service.log
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always

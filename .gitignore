@@ -1,0 +1,38 @@
+# CareerMate – .gitignore
+
+# Environment files (BẮT BUỘC không commit!)
+.env
+*.env.local
+*.env.production
+
+# Java / Maven build artifacts
+**/target/
+**/*.class
+**/*.jar
+**/*.war
+
+# Node.js
+**/node_modules/
+**/dist/
+**/.vite/
+
+# IDE
+.idea/
+.vscode/settings.json
+*.iml
+*.iws
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Docker
+.dockerignore
+
+# Temp files
+*.tmp
+*.bak

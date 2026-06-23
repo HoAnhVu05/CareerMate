@@ -1,0 +1,87 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      httpclient:
+        connect-timeout: 10000
+        response-timeout: PT60S
+      routes:
+        # User Service
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/users/**, /api/auth/**, /api/students/**, /api/recruiters/**, /api/messaging/**, /api/uploads/**
+          filters:
+            - StripPrefix=1
+        
+        # Job Service
+        - id: job-service
+          uri: lb://job-service
+          predicates:
+            - Path=/api/jobs/**, /api/applications/**
+          filters:
+            - StripPrefix=1
+        
+        # Content Service
+        - id: content-service
+          uri: lb://content-service
+          predicates:
+            - Path=/api/articles/**, /api/companies/**
+          filters:
+            - StripPrefix=1
+        
+        # Learning Service
+        - id: learning-service
+          uri: lb://learning-service
+          predicates:
+            - Path=/api/courses/**, /api/challenges/**, /api/cv-templates/**, /api/packages/**, /api/course-content/**
+          filters:
+            - StripPrefix=1
+        
+        # Admin Service
+        - id: admin-service
+          uri: lb://admin-service
+          predicates:
+            - Path=/api/admin/**
+          filters:
+            - StripPrefix=1
+        
+        # Notification Service
+        - id: notification-service
+          uri: lb://notification-service
+          predicates:
+            - Path=/api/notifications/**, /api/messages/**
+          filters:
+            - StripPrefix=1
+        
+        # AI Service
+        - id: ai-service
+          uri: lb://ai-service
+          predicates:
+            - Path=/api/ai/**, /api/career-roadmap/**
+          filters:
+            - StripPrefix=1
+      # Disable Spring Cloud Gateway's default CORS handling
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOriginPatterns: []
+            allowedMethods: []
+            allowedHeaders: []
+            allowCredentials: false
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+    fetch-registry: true
+    register-with-eureka: true
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.web: DEBUG

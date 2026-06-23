@@ -1,0 +1,169 @@
+spring:
+  application:
+    name: careermate-backend
+  
+  # Database Configuration
+  # Cấu hình database - PostgreSQL local
+  datasource:
+    url: jdbc:postgresql://localhost:5432/careermate_db
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:Aa1234}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: update # Tự động tạo/update tables khi chạy lần đầu với database trống
+      # Sau khi database ổn định có thể đổi lại thành 'validate' cho production
+    show-sql: false  # Đổi thành true để xem SQL queries
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        use_sql_comments: true
+    open-in-view: false
+  
+  # Redis Configuration
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+  
+  # File Upload Configuration
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+  
+  # OAuth2 Configuration (tạm thời tắt - uncomment khi có GOOGLE_CLIENT_ID và GOOGLE_CLIENT_SECRET)
+  # security:
+  #   oauth2:
+  #     client:
+  #       registration:
+  #         google:
+  #           client-id: ${GOOGLE_CLIENT_ID:}
+  #           client-secret: ${GOOGLE_CLIENT_SECRET:}
+  #           scope:
+  #             - openid
+  #             - profile
+  #             - email
+  #       provider:
+  #         google:
+  #           authorization-uri: https://accounts.google.com/o/oauth2/auth
+  #           token-uri: https://oauth2.googleapis.com/token
+  #           user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+  #           user-name-attribute: sub
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET:5Ug/98ITtqMrJqakx4zPmlUTDmqhqqsC2MNEfE4NZ4w=}
+  expiration: 86400000 # 24 hours in milliseconds
+  refresh-expiration: 604800000 # 7 days in milliseconds
+
+# AI Service Configuration - OpenRouter
+ai:
+  openrouter:
+    api-key: ${OPENROUTER_API_KEY:your-openrouter-api-key}
+    model: ${OPENROUTER_MODEL:meta-llama/llama-3.2-3b-instruct:free} # OpenRouter model format: provider/model-name (free model)
+    base-url: https://openrouter.ai/api/v1
+    timeout: 30000 # 30 seconds
+  
+  # Vector DB Configuration (for job matching)
+  vector-db:
+    type: weaviate # or pinecone
+    weaviate:
+      url: ${WEAVIATE_URL:http://localhost:8081}
+      api-key: ${WEAVIATE_API_KEY:}
+      enabled: ${WEAVIATE_ENABLED:false}
+    pinecone:
+      api-key: ${PINECONE_API_KEY:}
+      environment: ${PINECONE_ENV:}
+      enabled: ${PINECONE_ENABLED:false}
+
+# Application Configuration
+app:
+  name: CareerMate
+  version: 1.0.0
+  base-url: ${BASE_URL:http://localhost:8080}
+  frontend-url: ${FRONTEND_URL:http://localhost:3000}
+  
+  # File Storage
+  storage:
+    type: local # or s3, azure
+    local:
+      path: ${STORAGE_PATH:./uploads}
+    s3:
+      bucket: ${S3_BUCKET:}
+      region: ${S3_REGION:}
+      access-key: ${S3_ACCESS_KEY:}
+      secret-key: ${S3_SECRET_KEY:}
+  
+  # Rate Limiting
+  rate-limit:
+    enabled: true
+    requests-per-minute: 60
+    requests-per-hour: 1000
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    vn.careermate: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/careermate.log
+    max-size: 10MB
+    max-history: 30
+
+# Server Configuration
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /api
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: on_param
+    include-exception: false
+
+# Management/Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# Swagger/OpenAPI
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+
