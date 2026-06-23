@@ -7,7 +7,7 @@ const getFullUrl = (url) => {
   if (!url) return null;
   if (url.startsWith('http')) return url;
 
-  const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+  const apiBase = import.meta.env.VITE_API_BASE_URL || '/api';
 
   // If the path already includes /api at start, use origin only
   if (url.startsWith('/api')) {
