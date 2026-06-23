@@ -300,6 +300,7 @@ services:
       context: ./frontend
       args:
         VITE_API_BASE_URL: ""
+        VITE_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
     image: careermate/frontend:latest
     container_name: careermate-frontend
     restart: unless-stopped
