@@ -31,6 +31,7 @@ spring:
           useUnicode: true
         hbm2ddl:
           charset: UTF-8
+          create_namespaces: true
     open-in-view: false
 
 eureka:

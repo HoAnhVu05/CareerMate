@@ -40,6 +40,8 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
         default_schema: userservice
+        hbm2ddl:
+          create_namespaces: true
     open-in-view: false
   
   servlet:

@@ -19,6 +19,8 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         default_schema: aiservice
+        hbm2ddl:
+          create_namespaces: true
     open-in-view: false
 
 eureka:
