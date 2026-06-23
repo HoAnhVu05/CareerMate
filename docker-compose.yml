@@ -74,7 +74,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 128M
+          memory: 256M
 
   # ────────────────────────────────────────────────────────
   #  API GATEWAY
@@ -97,7 +97,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 128M
+          memory: 256M
 
   # ────────────────────────────────────────────────────────
   #  MICROSERVICES
@@ -134,7 +134,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 192M
+          memory: 384M
 
   job-service:
     build:
@@ -159,7 +159,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 192M
+          memory: 384M
 
   content-service:
     build:
@@ -187,7 +187,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 128M
+          memory: 256M
 
   notification-service:
     build:
@@ -214,7 +214,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 128M
+          memory: 192M
 
   learning-service:
     build:
@@ -239,7 +239,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 128M
+          memory: 256M
 
   ai-service:
     build:
@@ -265,7 +265,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 192M
+          memory: 384M
 
   admin-service:
     build:
@@ -290,7 +290,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 128M
+          memory: 192M
 
   # ────────────────────────────────────────────────────────
   #  FRONTEND
