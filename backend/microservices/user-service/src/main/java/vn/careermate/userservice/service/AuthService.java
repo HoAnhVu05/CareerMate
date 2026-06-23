@@ -288,7 +288,7 @@ public class AuthService {
     private GoogleIdToken.Payload verifyGoogleToken(String idTokenString) {
         String clientId = System.getenv("GOOGLE_CLIENT_ID");
         if (clientId == null || clientId.trim().isEmpty()) {
-            clientId = "656016314918-1tp7kg4j58hkmfj5g92ab0tn9tcm3ogm.apps.googleusercontent.com";
+            clientId = "921772117899-5bc9pgdnv7ipinufd5ekkhko6ijc2hrr.apps.googleusercontent.com";
         }
         
         try {
