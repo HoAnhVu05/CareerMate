@@ -67,6 +67,7 @@ public class StudentProfileController {
             
             Map<String, Object> dto = new HashMap<>();
             dto.put("id", profile.getId() != null ? profile.getId().toString() : null);
+            dto.put("userId", user != null ? user.getId().toString() : null);
             dto.put("dateOfBirth", profile.getDateOfBirth());
             dto.put("gender", profile.getGender());
             dto.put("address", profile.getAddress());
@@ -234,6 +235,9 @@ public class StudentProfileController {
             // Return as Map to avoid serialization issues
             Map<String, Object> response = new HashMap<>();
             response.put("id", updated.getId() != null ? updated.getId().toString() : null);
+            String email = auth.getName();
+            User user = userRepository.findByEmail(email).orElse(null);
+            response.put("userId", user != null ? user.getId().toString() : null);
             response.put("dateOfBirth", updated.getDateOfBirth());
             response.put("gender", updated.getGender());
             response.put("address", updated.getAddress());

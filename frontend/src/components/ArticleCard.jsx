@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import CompanyDetailModal from './CompanyDetailModal';
@@ -115,8 +115,45 @@ function ReplyComment({ reply, onReply, replyingTo, setReplyingTo, replyContent,
 
 export default function ArticleCard({ article, onUpdate, showFullComments = false }) {
   const navigate = useNavigate();
+  const reactionCloseTimeoutRef = useRef(null);
+
+  const getReactionEmojiUrl = (type) => {
+    const urls = {
+      LIKE: 'https://cdn.jsdelivr.net/npm/@twemoji/svg@latest/1f44d.svg',
+      LOVE: 'https://cdn.jsdelivr.net/npm/@twemoji/svg@latest/2764.svg',
+      HAHA: 'https://cdn.jsdelivr.net/npm/@twemoji/svg@latest/1f602.svg',
+      WOW: 'https://cdn.jsdelivr.net/npm/@twemoji/svg@latest/1f62e.svg',
+      SAD: 'https://cdn.jsdelivr.net/npm/@twemoji/svg@latest/1f622.svg',
+      ANGRY: 'https://cdn.jsdelivr.net/npm/@twemoji/svg@latest/1f621.svg'
+    };
+    return urls[type] || urls.LIKE;
+  };
+
+  const handleMouseEnter = () => {
+    if (reactionCloseTimeoutRef.current) {
+      clearTimeout(reactionCloseTimeoutRef.current);
+      reactionCloseTimeoutRef.current = null;
+    }
+    setShowReactionPicker(true);
+  };
+
+  const handleMouseLeave = () => {
+    reactionCloseTimeoutRef.current = setTimeout(() => {
+      setShowReactionPicker(false);
+    }, 300);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (reactionCloseTimeoutRef.current) {
+        clearTimeout(reactionCloseTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const [reactionCounts, setReactionCounts] = useState({});
   const [myReaction, setMyReaction] = useState(null);
+  const [showReactionPicker, setShowReactionPicker] = useState(false);
   const [comments, setComments] = useState([]);
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState('');
@@ -286,7 +323,9 @@ export default function ArticleCard({ article, onUpdate, showFullComments = fals
 
   const formatDate = (dateString) => {
     if (!dateString) return '';
-    const date = new Date(dateString);
+    const date = (typeof dateString === 'string' && !dateString.includes('Z') && !dateString.includes('+') && !/-\d{2}:\d{2}$/.test(dateString))
+      ? new Date(dateString + 'Z')
+      : new Date(dateString);
     const now = new Date();
     const diff = now - date;
     const minutes = Math.floor(diff / 60000);
@@ -311,9 +350,21 @@ export default function ArticleCard({ article, onUpdate, showFullComments = fals
       HAHA: '😂',
       WOW: '😮',
       SAD: '😢',
-      ANGRY: '😠'
+      ANGRY: '😡'
     };
     return emojis[type] || '👍';
+  };
+
+  const getReactionLabel = (type) => {
+    const labels = {
+      LIKE: 'Thích',
+      LOVE: 'Yêu thích',
+      HAHA: 'Haha',
+      WOW: 'Wow',
+      SAD: 'Buồn',
+      ANGRY: 'Phẫn nộ'
+    };
+    return labels[type] || 'Thích';
   };
 
   const handleAuthorClick = async () => {
@@ -358,7 +409,7 @@ export default function ArticleCard({ article, onUpdate, showFullComments = fals
   };
 
   return (
-    <div className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-900 rounded-xl shadow-lg mb-6 border-2 border-gray-100 dark:border-gray-800 hover:border-blue-200 dark:hover:border-blue-600 hover:shadow-2xl hover:shadow-blue-500/20 hover:-translate-y-1 transition-all duration-300 overflow-hidden">
+    <div className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-900 rounded-xl shadow-lg mb-6 border-2 border-gray-100 dark:border-gray-800 hover:border-blue-200 dark:hover:border-blue-600 hover:shadow-2xl hover:shadow-blue-500/20 hover:-translate-y-1 transition-all duration-300 overflow-hidden group">
       {/* Header with Avatar and Author Info */}
       <div className="p-5 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
         <div className="flex items-center gap-3">
@@ -465,7 +516,12 @@ export default function ArticleCard({ article, onUpdate, showFullComments = fals
               .filter(([_, count]) => count > 0)
               .slice(0, 3)
               .map(([type, _]) => (
-                <span key={type} className="text-lg transform hover:scale-125 transition-transform">{getReactionEmoji(type)}</span>
+                <img 
+                  key={type} 
+                  src={getReactionEmojiUrl(type)} 
+                  className="w-5 h-5 object-contain border border-white dark:border-slate-900 rounded-full bg-white dark:bg-slate-900 p-0.5 transform hover:scale-125 transition-transform" 
+                  alt={type} 
+                />
               ))}
           </div>
           <span className="font-semibold text-gray-700 dark:text-gray-300">{getTotalReactions()}</span>
@@ -484,16 +540,69 @@ export default function ArticleCard({ article, onUpdate, showFullComments = fals
       {/* Action Buttons */}
       <div className="px-5 py-3 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
         <div className="flex items-center justify-around gap-2">
-          <button
-            onClick={() => handleReaction('LIKE')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-200 flex-1 justify-center ${myReaction?.reactionType === 'LIKE'
-              ? 'bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-gray-800 dark:to-gray-800 text-blue-700 dark:text-blue-300 shadow-md transform scale-105'
-              : 'text-gray-600 dark:text-gray-300 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 dark:hover:from-gray-800 dark:hover:to-gray-800 hover:shadow-sm'
-              }`}
+          <div 
+            className="relative flex-1"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
           >
-            <span className="text-xl">{getReactionEmoji('LIKE')}</span>
-            <span className="font-semibold">Thích</span>
-          </button>
+            <button
+              onClick={() => handleReaction(myReaction ? null : 'LIKE')}
+              className={`w-full flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-200 justify-center ${myReaction
+                ? 'bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-gray-800 dark:to-gray-800 text-blue-700 dark:text-blue-300 shadow-md transform scale-105'
+                : 'text-gray-600 dark:text-gray-300 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 dark:hover:from-gray-800 dark:hover:to-gray-800 hover:shadow-sm'
+                }`}
+            >
+              {myReaction ? (
+                <img 
+                  src={getReactionEmojiUrl(myReaction.reactionType)} 
+                  className="w-5 h-5 object-contain" 
+                  alt={myReaction.reactionType} 
+                />
+              ) : (
+                <span className="text-xl">👍</span>
+              )}
+              <span className="font-semibold">{myReaction ? getReactionLabel(myReaction.reactionType) : 'Thích'}</span>
+            </button>
+
+            {/* Facebook-style Reaction Picker */}
+            {showReactionPicker && (
+              <div 
+                className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 flex items-center gap-2 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-full shadow-2xl px-3 py-2 border border-slate-100 dark:border-slate-800 z-30 animate-reaction-pop origin-bottom"
+              >
+                {[
+                  { type: 'LIKE', label: 'Thích' },
+                  { type: 'LOVE', label: 'Yêu thích' },
+                  { type: 'HAHA', label: 'Haha' },
+                  { type: 'WOW', label: 'Wow' },
+                  { type: 'SAD', label: 'Buồn' },
+                  { type: 'ANGRY', label: 'Phẫn nộ' }
+                ].map((item, idx) => (
+                  <button
+                    key={item.type}
+                    type="button"
+                    onClick={() => {
+                      handleReaction(item.type);
+                      setShowReactionPicker(false);
+                    }}
+                    className="relative group/emoji hover:scale-150 hover:-translate-y-2.5 transition-all duration-300 p-1.5 flex items-center justify-center rounded-full active:scale-95 animate-reaction-item"
+                    title={item.label}
+                    style={{
+                      animationDelay: `${idx * 40}ms`
+                    }}
+                  >
+                    <img 
+                      src={getReactionEmojiUrl(item.type)} 
+                      className="w-9 h-9 object-contain filter drop-shadow-sm select-none" 
+                      alt={item.label} 
+                    />
+                    <span className="emoji-tooltip">
+                      {item.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <button
             onClick={() => setShowComments(!showComments)}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-200 flex-1 justify-center text-gray-600 dark:text-gray-300 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 dark:hover:from-gray-800 dark:hover:to-gray-800 hover:shadow-sm ${showComments ? 'bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-800' : ''
@@ -508,22 +617,6 @@ export default function ArticleCard({ article, onUpdate, showFullComments = fals
               </span>
             )}
           </button>
-        </div>
-      </div>
-
-      {/* Reaction Picker (on hover) */}
-      <div className="px-4 pb-2 hidden group-hover:block">
-        <div className="flex items-center gap-1 bg-white dark:bg-gray-800 rounded-full shadow-lg p-1">
-          {['LIKE', 'LOVE', 'HAHA', 'WOW', 'SAD', 'ANGRY'].map((type) => (
-            <button
-              key={type}
-              onClick={() => handleReaction(type)}
-              className="text-2xl hover:scale-125 transition-transform"
-              title={type}
-            >
-              {getReactionEmoji(type)}
-            </button>
-          ))}
         </div>
       </div>
 

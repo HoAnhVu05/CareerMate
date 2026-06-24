@@ -39,20 +39,16 @@ public class SetupController {
             if (existingAdmin.isPresent()) {
                 User admin = existingAdmin.get();
                 
-                // Update to ADMIN role if not already
-                if (admin.getRole() != User.UserRole.ADMIN) {
-                    admin.setRole(User.UserRole.ADMIN);
-                    admin.setStatus(User.UserStatus.ACTIVE);
-                    admin.setUpdatedAt(LocalDateTime.now());
-                    userRepository.save(admin);
-                    
-                    response.put("status", "updated");
-                    response.put("message", "Existing user updated to ADMIN role");
-                } else {
-                    response.put("status", "exists");
-                    response.put("message", "Admin user already exists with ADMIN role");
-                }
+                // Always reset password and ensure ADMIN role/status is active
+                admin.setRole(User.UserRole.ADMIN);
+                admin.setStatus(User.UserStatus.ACTIVE);
+                admin.setPasswordHash(passwordEncoder.encode(adminPassword));
+                admin.setEmailVerified(true);
+                admin.setUpdatedAt(LocalDateTime.now());
+                userRepository.save(admin);
                 
+                response.put("status", "updated");
+                response.put("message", "Existing admin user updated (role set to ADMIN, password reset to admin123)");
                 response.put("email", admin.getEmail());
                 response.put("role", admin.getRole().name());
                 

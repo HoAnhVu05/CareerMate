@@ -11,6 +11,7 @@ export default function StudentLayout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [avatarUrl, setAvatarUrl] = useState(null);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
 
   useEffect(() => {
     loadAvatar();
@@ -67,9 +68,10 @@ export default function StudentLayout({ children }) {
     return null;
   };
 
-  const NavItem = ({ to, icon, label, isActive, badge, highlight }) => (
+  const NavItem = ({ to, icon, label, isActive, badge, highlight, onClick }) => (
     <Link
       to={to}
+      onClick={onClick}
       className={`relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${isActive
         ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20'
         : highlight
@@ -114,7 +116,182 @@ export default function StudentLayout({ children }) {
         backgroundAttachment: 'fixed'
       }}>
       <div className="flex h-screen overflow-hidden">
-        {/* Sidebar */}
+        {/* Mobile Sidebar Backdrop */}
+        {showMobileSidebar && (
+          <div 
+            className="md:hidden fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-30 transition-all animate-fade-in"
+            onClick={() => setShowMobileSidebar(false)}
+          />
+        )}
+
+        {/* Mobile Sidebar Drawer */}
+        <aside className={`md:hidden fixed top-0 bottom-0 left-0 w-72 bg-white dark:bg-slate-950 border-r border-white/20 dark:border-white/5 shadow-2xl z-40 flex flex-col transition-transform duration-300 transform ${showMobileSidebar ? 'translate-x-0' : '-translate-x-full'}`}>
+          <div className="h-20 flex items-center justify-between px-6 border-b border-gray-100/50 dark:border-gray-800/50">
+            <Link to="/student/dashboard" className="flex items-center gap-3" onClick={() => setShowMobileSidebar(false)}>
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white font-bold shadow-lg">
+                CM
+              </span>
+              <div className="flex flex-col text-left">
+                <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
+                  CareerMate
+                </span>
+                <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
+                  Student Portal
+                </span>
+              </div>
+            </Link>
+            <button
+              onClick={() => setShowMobileSidebar(false)}
+              className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+              title="Đóng menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto custom-scrollbar">
+            <p className="px-4 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">Menu</p>
+
+            <NavItem
+              to="/student/dashboard"
+              icon="fas fa-home"
+              label="Tổng quan"
+              isActive={isActive('/student/dashboard')}
+              onClick={() => setShowMobileSidebar(false)}
+            />
+            <NavItem
+              to="/student/jobs"
+              icon="fas fa-briefcase"
+              label="Việc làm"
+              isActive={isActive('/student/jobs')}
+              onClick={() => setShowMobileSidebar(false)}
+            />
+            <NavItem
+              to="/student/applications"
+              icon="fas fa-file-signature"
+              label="Đơn ứng tuyển"
+              isActive={isActive('/student/applications')}
+              onClick={() => setShowMobileSidebar(false)}
+            />
+            <NavItem
+              to="/student/cv"
+              icon="fas fa-file-alt"
+              label="CV của tôi"
+              isActive={isActive('/student/cv') || location.pathname.startsWith('/student/cv/')}
+              onClick={() => setShowMobileSidebar(false)}
+            />
+            <NavItem
+              to="/student/cv-templates"
+              icon="fas fa-file-invoice"
+              label="Kho mẫu CV"
+              isActive={isActive('/student/cv-templates')}
+              badge="Hot"
+              onClick={() => setShowMobileSidebar(false)}
+            />
+
+            <p className="px-4 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-6 mb-3">Phát triển</p>
+
+            <NavItem
+              to="/student/roadmap"
+              icon="fas fa-route"
+              label="Lộ trình"
+              isActive={isActive('/student/roadmap')}
+              onClick={() => setShowMobileSidebar(false)}
+            />
+            <NavItem
+              to="/student/courses"
+              icon="fas fa-graduation-cap"
+              label="Khóa học"
+              isActive={isActive('/student/courses')}
+              onClick={() => setShowMobileSidebar(false)}
+            />
+            <NavItem
+              to="/student/challenges"
+              icon="fas fa-trophy"
+              label="Thử thách"
+              isActive={isActive('/student/challenges')}
+              onClick={() => setShowMobileSidebar(false)}
+            />
+            <NavItem
+              to="/student/articles"
+              icon="fas fa-newspaper"
+              label="Bài viết"
+              isActive={isActive('/student/articles')}
+              onClick={() => setShowMobileSidebar(false)}
+            />
+            <NavItem
+              to="/student/mock-interview"
+              icon="fas fa-video"
+              label="Phỏng vấn thử"
+              isActive={isActive('/student/mock-interview') || location.pathname.includes('/student/mock-interview')}
+              onClick={() => setShowMobileSidebar(false)}
+            />
+
+            <p className="px-4 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-6 mb-3">Khác</p>
+
+            <NavItem
+              to="/student/companies"
+              icon="fas fa-building"
+              label="Công ty"
+              isActive={isActive('/student/companies')}
+              onClick={() => setShowMobileSidebar(false)}
+            />
+            <NavItem
+              to="/student/messages"
+              icon="fas fa-comments"
+              label="Tin nhắn"
+              isActive={isActive('/student/messages')}
+              onClick={() => setShowMobileSidebar(false)}
+            />
+            <NavItem
+              to="/student/packages"
+              icon="fas fa-crown"
+              label="Nâng cấp Premium"
+              isActive={isActive('/student/packages')}
+              highlight={true}
+              onClick={() => setShowMobileSidebar(false)}
+            />
+          </nav>
+
+          <div className="p-4 border-t border-gray-100/50 dark:border-gray-800/50 bg-white/30 dark:bg-black/20">
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-white/50 dark:bg-black/50 border border-white/40 dark:border-white/5 shadow-sm">
+              {getAvatarUrl() ? (
+                <img
+                  src={getAvatarUrl()}
+                  alt="Avatar"
+                  className="w-10 h-10 rounded-full border-2 border-white dark:border-gray-700 object-cover shadow-sm"
+                  onError={() => setAvatarUrl(null)}
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white">
+                  <span className="text-sm font-bold">{user?.fullName?.charAt(0) || 'S'}</span>
+                </div>
+              )}
+              <div className="flex-grow min-w-0 text-left">
+                <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
+                  {user?.fullName || 'Sinh viên'}
+                </p>
+                <Link to="/student/profile" className="text-xs text-blue-600 dark:text-blue-400 hover:underline" onClick={() => setShowMobileSidebar(false)}>
+                  Xem hồ sơ
+                </Link>
+              </div>
+              <button
+                onClick={() => {
+                  setShowMobileSidebar(false);
+                  handleLogout();
+                }}
+                className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                title="Đăng xuất"
+              >
+                <i className="fas fa-sign-out-alt"></i>
+              </button>
+            </div>
+          </div>
+        </aside>
+
+        {/* Sidebar (Desktop) */}
         <aside className="hidden md:flex w-72 flex-col bg-white/70 dark:bg-black/70 backdrop-blur-xl border-r border-white/20 dark:border-white/5 shadow-2xl z-20 transition-all duration-300">
           <div className="h-20 flex items-center px-8 border-b border-gray-100/50 dark:border-gray-800/50">
             <Link to="/student/dashboard" className="flex items-center gap-3 group">
@@ -264,6 +441,15 @@ export default function StudentLayout({ children }) {
           {/* Top bar */}
           <header className="h-20 px-6 md:px-8 flex items-center justify-between bg-white/50 dark:bg-black/50 backdrop-blur-md border-b border-white/20 dark:border-white/5 z-10 sticky top-0">
             <div className="flex items-center gap-4">
+              <button
+                onClick={() => setShowMobileSidebar(true)}
+                className="md:hidden p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors mr-2"
+                title="Mở menu"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
               <div className="md:hidden">
                 <Link to="/student/dashboard" className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold">

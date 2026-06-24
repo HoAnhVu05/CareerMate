@@ -73,7 +73,9 @@ public class GeminiService {
             generationConfig.put("topP", 0.95);
             generationConfig.put("topK", 40);
             generationConfig.put("maxOutputTokens", 8192);
-            generationConfig.put("response_mime_type", "application/json");
+            if (prompt != null && prompt.toUpperCase().contains("JSON")) {
+                generationConfig.put("response_mime_type", "application/json");
+            }
             request.put("generationConfig", generationConfig);
 
             String requestBody = objectMapper.writeValueAsString(request);
@@ -185,7 +187,9 @@ public class GeminiService {
             // Optional: Add generation config
             Map<String, Object> generationConfig = new HashMap<>();
             generationConfig.put("maxOutputTokens", 8192);
-            generationConfig.put("response_mime_type", "application/json");
+            if (prompt != null && prompt.toUpperCase().contains("JSON")) {
+                generationConfig.put("response_mime_type", "application/json");
+            }
             request.put("generationConfig", generationConfig);
 
             String requestBody = objectMapper.writeValueAsString(request);
@@ -287,7 +291,6 @@ public class GeminiService {
             //Generation config
             Map<String, Object> generationConfig = new HashMap<>();
             generationConfig.put("maxOutputTokens", 8192);
-            generationConfig.put("response_mime_type", "application/json");
             request.put("generationConfig", generationConfig);
 
             String requestBody = objectMapper.writeValueAsString(request);

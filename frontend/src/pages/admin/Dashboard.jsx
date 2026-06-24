@@ -7,6 +7,7 @@ import autoTable from 'jspdf-autotable';
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
+  const [conversationsCount, setConversationsCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -18,6 +19,12 @@ export default function AdminDashboard() {
       setLoading(true);
       const data = await api.getAdminDashboardStats();
       setStats(data);
+      try {
+        const conversations = await api.getAdminConversations();
+        setConversationsCount(conversations?.length || 0);
+      } catch (err) {
+        console.error('Error loading conversations for stats:', err);
+      }
     } catch (error) {
       console.error('Error loading dashboard stats:', error);
     } finally {
@@ -216,7 +223,7 @@ export default function AdminDashboard() {
     },
     {
       title: 'Tin nhắn',
-      value: '24', // Placeholder for now
+      value: conversationsCount,
       growth: 0,
       icon: 'fa-comments',
       gradient: 'from-violet-500 to-indigo-500',

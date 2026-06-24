@@ -26,3 +26,15 @@ export const getFullUrl = (url) => {
   const path = url.startsWith('/') ? url : `/${url}`;
   return `${apiBase}${path}`;
 };
+
+/**
+ * Parses UTC date strings returned by the backend (which might lack timezone info like 'Z')
+ * safely as UTC so JavaScript parses it in the user's correct local timezone.
+ */
+export const safeParseDate = (dateString) => {
+  if (!dateString) return new Date();
+  if (typeof dateString === 'string' && !dateString.includes('Z') && !dateString.includes('+') && !/-\d{2}:\d{2}$/.test(dateString)) {
+    return new Date(dateString + 'Z');
+  }
+  return new Date(dateString);
+};

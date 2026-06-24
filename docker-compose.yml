@@ -35,7 +35,7 @@ services:
     image: redis:7-alpine
     container_name: careermate-redis
 #    restart: unless-stopped
-    command: redis-server --maxmemory 64mb --maxmemory-policy allkeys-lru
+    command: redis-server --maxmemory 32mb --maxmemory-policy allkeys-lru
     ports:
       - "6379:6379"
     volumes:
@@ -48,7 +48,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 64M
+          memory: 48M
 
   # ────────────────────────────────────────────────────────
   #  SERVICE DISCOVERY
@@ -60,11 +60,11 @@ services:
     image: careermate/eureka-server:latest
     container_name: careermate-eureka
 #    restart: unless-stopped
+    entrypoint: ["java", "-Xmx48m", "-Xms24m", "-Xss256k", "-XX:TieredStopAtLevel=1", "-XX:+UseSerialGC", "-jar", "app.jar"]
     ports:
       - "8761:8761"
     environment:
       - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
-      - JAVA_TOOL_OPTIONS=-Xmx96m -Xms48m -XX:+UseG1GC
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8761/actuator/health || exit 1"]
       interval: 30s
@@ -74,7 +74,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256M
+          memory: 144M
 
   # ────────────────────────────────────────────────────────
   #  API GATEWAY
@@ -86,18 +86,18 @@ services:
     image: careermate/api-gateway:latest
     container_name: careermate-gateway
 #    restart: unless-stopped
+    entrypoint: ["java", "-Xmx64m", "-Xms32m", "-Xss256k", "-XX:TieredStopAtLevel=1", "-XX:+UseSerialGC", "-jar", "app.jar"]
     ports:
       - "8080:8080"
     environment:
       - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
-      - JAVA_TOOL_OPTIONS=-Xmx96m -Xms48m -XX:+UseG1GC
     depends_on:
       eureka-server:
         condition: service_healthy
     deploy:
       resources:
         limits:
-          memory: 256M
+          memory: 192M
 
   # ────────────────────────────────────────────────────────
   #  MICROSERVICES
@@ -109,6 +109,7 @@ services:
     image: careermate/user-service:latest
     container_name: careermate-user-service
 #    restart: unless-stopped
+    entrypoint: ["java", "-Xmx112m", "-Xms56m", "-Xss256k", "-XX:TieredStopAtLevel=1", "-XX:+UseSerialGC", "-jar", "app.jar"]
     environment:
       - SERVER_PORT=8081
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/careermate_db
@@ -123,7 +124,6 @@ services:
       - BASE_URL=http://${EC2_PUBLIC_IP:-localhost}:8080
       - STORAGE_PATH=/app/uploads
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-      - JAVA_TOOL_OPTIONS=-Xmx128m -Xms64m -XX:+UseG1GC
     volumes:
       - user_uploads:/app/uploads
     depends_on:
@@ -134,7 +134,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 384M
+          memory: 300M
 
   job-service:
     build:
@@ -143,6 +143,7 @@ services:
     image: careermate/job-service:latest
     container_name: careermate-job-service
 #    restart: unless-stopped
+    entrypoint: ["java", "-Xmx80m", "-Xms40m", "-Xss256k", "-XX:TieredStopAtLevel=1", "-XX:+UseSerialGC", "-jar", "app.jar"]
     environment:
       - SERVER_PORT=8082
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/careermate_db
@@ -150,7 +151,6 @@ services:
       - DB_PASSWORD=${DB_PASSWORD:-CareerMate2024!}
       - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
       - JWT_SECRET=${JWT_SECRET:-5Ug/98ITtqMrJqakx4zPmlUTDmqhqqsC2MNEfE4NZ4w=}
-      - JAVA_TOOL_OPTIONS=-Xmx128m -Xms64m -XX:+UseG1GC
     depends_on:
       postgres:
         condition: service_healthy
@@ -159,7 +159,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 384M
+          memory: 224M
 
   content-service:
     build:
@@ -168,6 +168,7 @@ services:
     image: careermate/content-service:latest
     container_name: careermate-content-service
 #    restart: unless-stopped
+    entrypoint: ["java", "-Xmx64m", "-Xms32m", "-Xss256k", "-XX:TieredStopAtLevel=1", "-XX:+UseSerialGC", "-jar", "app.jar"]
     environment:
       - SERVER_PORT=8083
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/careermate_db
@@ -176,7 +177,6 @@ services:
       - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
       - JWT_SECRET=${JWT_SECRET:-5Ug/98ITtqMrJqakx4zPmlUTDmqhqqsC2MNEfE4NZ4w=}
       - STORAGE_PATH=/app/uploads
-      - JAVA_TOOL_OPTIONS=-Xmx96m -Xms48m -XX:+UseG1GC
     volumes:
       - content_uploads:/app/uploads
     depends_on:
@@ -187,7 +187,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256M
+          memory: 192M
 
   notification-service:
     build:
@@ -196,6 +196,7 @@ services:
     image: careermate/notification-service:latest
     container_name: careermate-notification-service
 #    restart: unless-stopped
+    entrypoint: ["java", "-Xmx64m", "-Xms32m", "-Xss256k", "-XX:TieredStopAtLevel=1", "-XX:+UseSerialGC", "-jar", "app.jar"]
     environment:
       - SERVER_PORT=8084
       - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
@@ -207,7 +208,6 @@ services:
       - MAIL_PORT=${MAIL_PORT:-587}
       - MAIL_USERNAME=${MAIL_USERNAME}
       - MAIL_PASSWORD=${MAIL_PASSWORD}
-      - JAVA_TOOL_OPTIONS=-Xmx96m -Xms48m -XX:+UseG1GC
     depends_on:
       eureka-server:
         condition: service_healthy
@@ -223,6 +223,7 @@ services:
     image: careermate/learning-service:latest
     container_name: careermate-learning-service
 #    restart: unless-stopped
+    entrypoint: ["java", "-Xmx64m", "-Xms32m", "-Xss256k", "-XX:TieredStopAtLevel=1", "-XX:+UseSerialGC", "-jar", "app.jar"]
     environment:
       - SERVER_PORT=8085
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/careermate_db
@@ -230,7 +231,33 @@ services:
       - DB_PASSWORD=${DB_PASSWORD:-CareerMate2024!}
       - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
       - JWT_SECRET=${JWT_SECRET:-5Ug/98ITtqMrJqakx4zPmlUTDmqhqqsC2MNEfE4NZ4w=}
-      - JAVA_TOOL_OPTIONS=-Xmx96m -Xms48m -XX:+UseG1GC
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 192M
+
+  ai-service:
+    build:
+      context: ./backend/microservices
+      dockerfile: ai-service/Dockerfile
+    image: careermate/ai-service:latest
+    container_name: careermate-ai-service
+#    restart: unless-stopped
+    entrypoint: ["java", "-Xmx96m", "-Xms48m", "-Xss256k", "-XX:TieredStopAtLevel=1", "-XX:+UseSerialGC", "-jar", "app.jar"]
+    environment:
+      - SERVER_PORT=8086
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/careermate_db
+      - DB_USERNAME=${DB_USERNAME:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-CareerMate2024!}
+      - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
+      - JWT_SECRET=${JWT_SECRET:-5Ug/98ITtqMrJqakx4zPmlUTDmqhqqsC2MNEfE4NZ4w=}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-3.1-flash-lite}
     depends_on:
       postgres:
         condition: service_healthy
@@ -241,32 +268,6 @@ services:
         limits:
           memory: 256M
 
-  ai-service:
-    build:
-      context: ./backend/microservices
-      dockerfile: ai-service/Dockerfile
-    image: careermate/ai-service:latest
-    container_name: careermate-ai-service
-#    restart: unless-stopped
-    environment:
-      - SERVER_PORT=8086
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/careermate_db
-      - DB_USERNAME=${DB_USERNAME:-postgres}
-      - DB_PASSWORD=${DB_PASSWORD:-CareerMate2024!}
-      - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
-      - JWT_SECRET=${JWT_SECRET:-5Ug/98ITtqMrJqakx4zPmlUTDmqhqqsC2MNEfE4NZ4w=}
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - JAVA_TOOL_OPTIONS=-Xmx128m -Xms64m -XX:+UseG1GC
-    depends_on:
-      postgres:
-        condition: service_healthy
-      eureka-server:
-        condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          memory: 384M
-
   admin-service:
     build:
       context: ./backend/microservices
@@ -274,6 +275,7 @@ services:
     image: careermate/admin-service:latest
     container_name: careermate-admin-service
 #    restart: unless-stopped
+    entrypoint: ["java", "-Xmx64m", "-Xms32m", "-Xss256k", "-XX:TieredStopAtLevel=1", "-XX:+UseSerialGC", "-jar", "app.jar"]
     environment:
       - SERVER_PORT=8087
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/careermate_db
@@ -281,7 +283,6 @@ services:
       - DB_PASSWORD=${DB_PASSWORD:-CareerMate2024!}
       - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
       - JWT_SECRET=${JWT_SECRET:-5Ug/98ITtqMrJqakx4zPmlUTDmqhqqsC2MNEfE4NZ4w=}
-      - JAVA_TOOL_OPTIONS=-Xmx96m -Xms48m -XX:+UseG1GC
     depends_on:
       postgres:
         condition: service_healthy

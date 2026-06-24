@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
 import { getFullUrl } from '../../utils/apiUtils';
@@ -111,6 +111,45 @@ export default function ArticleDetail({ articleId: propId, isModal, onClose }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [newComment, setNewComment] = useState('');
   const [showAuthorModal, setShowAuthorModal] = useState(false);
+  const reactionCloseTimeoutRef = useRef(null);
+
+  const getReactionEmojiUrl = (type) => {
+    const urls = {
+      LIKE: 'https://cdn.jsdelivr.net/npm/@twemoji/svg@latest/1f44d.svg',
+      LOVE: 'https://cdn.jsdelivr.net/npm/@twemoji/svg@latest/2764.svg',
+      HAHA: 'https://cdn.jsdelivr.net/npm/@twemoji/svg@latest/1f602.svg',
+      WOW: 'https://cdn.jsdelivr.net/npm/@twemoji/svg@latest/1f62e.svg',
+      SAD: 'https://cdn.jsdelivr.net/npm/@twemoji/svg@latest/1f622.svg',
+      ANGRY: 'https://cdn.jsdelivr.net/npm/@twemoji/svg@latest/1f621.svg'
+    };
+    return urls[type] || urls.LIKE;
+  };
+
+  const handleMouseEnter = () => {
+    if (reactionCloseTimeoutRef.current) {
+      clearTimeout(reactionCloseTimeoutRef.current);
+      reactionCloseTimeoutRef.current = null;
+    }
+    setShowReactionPicker(true);
+  };
+
+  const handleMouseLeave = () => {
+    reactionCloseTimeoutRef.current = setTimeout(() => {
+      setShowReactionPicker(false);
+    }, 300);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (reactionCloseTimeoutRef.current) {
+        clearTimeout(reactionCloseTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const [reactionCounts, setReactionCounts] = useState({});
+  const [myReaction, setMyReaction] = useState(null);
+  const [showReactionPicker, setShowReactionPicker] = useState(false);
 
   // Helper to get initials
   const getInitials = (name) => {
@@ -127,6 +166,7 @@ export default function ArticleDetail({ articleId: propId, isModal, onClose }) {
     }
     loadArticle();
     loadComments();
+    loadReactions();
   }, [id]);
 
   const loadArticle = async () => {
@@ -248,6 +288,55 @@ export default function ArticleDetail({ articleId: propId, isModal, onClose }) {
       console.error('Error posting reply:', error);
       alert('Không thể trả lời. Vui lòng thử lại.');
     }
+  };
+
+  const loadReactions = async () => {
+    try {
+      const counts = await api.getArticleReactionCounts(id);
+      setReactionCounts(counts || {});
+      
+      const myReact = await api.getMyArticleReaction(id);
+      setMyReaction(myReact);
+    } catch (error) {
+      console.error('Error loading reactions:', error);
+    }
+  };
+
+  const handleReaction = async (reactionType) => {
+    try {
+      await api.toggleArticleReaction(id, reactionType);
+      await loadReactions();
+    } catch (error) {
+      console.error('Error reacting to article:', error);
+    }
+  };
+
+  const getTotalReactions = () => {
+    return Object.values(reactionCounts).reduce((sum, count) => sum + count, 0);
+  };
+
+  const getReactionEmoji = (type) => {
+    const emojis = {
+      LIKE: '👍',
+      LOVE: '❤️',
+      HAHA: '😂',
+      WOW: '😮',
+      SAD: '😢',
+      ANGRY: '😡'
+    };
+    return emojis[type] || '👍';
+  };
+
+  const getReactionLabel = (type) => {
+    const labels = {
+      LIKE: 'Thích',
+      LOVE: 'Yêu thích',
+      HAHA: 'Haha',
+      WOW: 'Wow',
+      SAD: 'Buồn',
+      ANGRY: 'Phẫn nộ'
+    };
+    return labels[type] || 'Thích';
   };
 
   const formatDate = (dateString) => {
@@ -386,6 +475,19 @@ export default function ArticleDetail({ articleId: propId, isModal, onClose }) {
         </div>
       )}
 
+      {/* Article Excerpt/Summary */}
+      {article.excerpt && article.content && (
+        <div className="bg-gradient-to-r from-indigo-50/50 to-blue-50/50 dark:from-slate-800/40 dark:to-slate-800/20 rounded-[2rem] p-8 border border-indigo-100/50 dark:border-slate-800 mb-8 shadow-sm">
+          <h3 className="text-sm font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+            <i className="fas fa-quote-left text-xs"></i>
+            Tóm tắt bài viết
+          </h3>
+          <p className="text-slate-600 dark:text-slate-300 font-medium leading-relaxed italic">
+            {article.excerpt}
+          </p>
+        </div>
+      )}
+
       {/* Article Content */}
       <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 md:p-12 shadow-xl ring-1 ring-slate-900/5 mb-12">
         {article.content ? (
@@ -398,6 +500,97 @@ export default function ArticleDetail({ articleId: propId, isModal, onClose }) {
             {article.excerpt || 'Nội dung bài viết đang được cập nhật...'}
           </p>
         )}
+      </div>
+
+      {/* Reactions Bar & Actions */}
+      <div className="max-w-3xl mx-auto mb-12 border-y border-slate-100 dark:border-slate-800 py-5 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          {getTotalReactions() > 0 ? (
+            <>
+              <div className="flex -space-x-1">
+                {Object.entries(reactionCounts)
+                  .filter(([_, count]) => count > 0)
+                  .slice(0, 3)
+                  .map(([type, _]) => (
+                    <img 
+                      key={type} 
+                      src={getReactionEmojiUrl(type)} 
+                      className="w-5 h-5 object-contain border border-white dark:border-slate-900 rounded-full bg-white dark:bg-slate-900 p-0.5 transform hover:scale-125 transition-transform" 
+                      alt={type} 
+                    />
+                  ))}
+              </div>
+              <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{getTotalReactions()} lượt thích</span>
+            </>
+          ) : (
+            <span className="text-sm font-medium text-slate-400">Chưa có tương tác nào</span>
+          )}
+        </div>
+
+        <div 
+          className="relative"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          <button
+            onClick={() => handleReaction(myReaction ? null : 'LIKE')}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-200 ${
+              myReaction
+                ? 'bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-gray-800 dark:to-gray-800 text-blue-700 dark:text-blue-300 font-bold shadow-sm scale-105'
+                : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 font-semibold'
+            }`}
+          >
+            {myReaction ? (
+              <img 
+                src={getReactionEmojiUrl(myReaction.reactionType)} 
+                className="w-5 h-5 object-contain" 
+                alt={myReaction.reactionType} 
+              />
+            ) : (
+              <span className="text-lg">👍</span>
+            )}
+            <span>{myReaction ? getReactionLabel(myReaction.reactionType) : 'Thích'}</span>
+          </button>
+
+          {/* Facebook-style Reaction Picker */}
+          {showReactionPicker && (
+            <div 
+              className="absolute right-0 bottom-full mb-2 flex items-center gap-2 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-full shadow-2xl px-3 py-2 border border-slate-100 dark:border-slate-800 z-30 animate-reaction-pop origin-bottom"
+            >
+              {[
+                { type: 'LIKE', label: 'Thích' },
+                { type: 'LOVE', label: 'Yêu thích' },
+                { type: 'HAHA', label: 'Haha' },
+                { type: 'WOW', label: 'Wow' },
+                { type: 'SAD', label: 'Buồn' },
+                { type: 'ANGRY', label: 'Phẫn nộ' }
+              ].map((item, idx) => (
+                <button
+                  key={item.type}
+                  type="button"
+                  onClick={() => {
+                    handleReaction(item.type);
+                    setShowReactionPicker(false);
+                  }}
+                  className="relative group/emoji hover:scale-150 hover:-translate-y-2.5 transition-all duration-300 p-1.5 flex items-center justify-center rounded-full active:scale-95 animate-reaction-item"
+                  title={item.label}
+                  style={{
+                    animationDelay: `${idx * 40}ms`
+                  }}
+                >
+                  <img 
+                    src={getReactionEmojiUrl(item.type)} 
+                    className="w-9 h-9 object-contain filter drop-shadow-sm select-none" 
+                    alt={item.label} 
+                  />
+                  <span className="emoji-tooltip">
+                    {item.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Comments Section */}

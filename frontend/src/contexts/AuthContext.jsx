@@ -18,7 +18,37 @@ export function AuthProvider({ children }) {
       }
     }
     setLoading(false);
-  }, []);
+
+    // Listen for storage changes in other tabs (prevents session crosstalk)
+    const handleStorageChange = (e) => {
+      if (e.key === 'user' || e.key === 'token') {
+        const storedUser = localStorage.getItem('user');
+        const storedToken = localStorage.getItem('token');
+
+        if (!storedUser || !storedToken) {
+          // Logged out in another tab
+          if (user) {
+            console.log('Session cleared in another tab. Redirecting...');
+            setUser(null);
+            window.location.href = '/login';
+          }
+          return;
+        }
+
+        try {
+          const newUser = JSON.parse(storedUser);
+          if (!user || user.id !== newUser.id) {
+            console.log('Session changed in another tab. Reloading...');
+            window.location.reload();
+          }
+        } catch (err) {
+          console.error('Error parsing changed storage user:', err);
+        }
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [user]);
 
   const login = async (email, password) => {
     try {

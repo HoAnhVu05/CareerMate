@@ -92,7 +92,9 @@ export default function Notifications() {
   };
 
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
+    const date = (typeof dateString === 'string' && !dateString.includes('Z') && !dateString.includes('+') && !/-\d{2}:\d{2}$/.test(dateString))
+      ? new Date(dateString + 'Z')
+      : new Date(dateString);
     const now = new Date();
     const diff = now - date;
     const minutes = Math.floor(diff / 60000);

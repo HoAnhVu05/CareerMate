@@ -4,6 +4,14 @@ import { useSearchParams, useLocation } from 'react-router-dom';
 import api from '../../services/api';
 import UserInfoModal from '../../components/UserInfoModal';
 
+const parseUTCDate = (str) => {
+  if (!str) return new Date();
+  if (typeof str === 'string' && !str.includes('Z') && !str.includes('+') && !/-\d{2}:\d{2}$/.test(str)) {
+    return new Date(str + 'Z');
+  }
+  return new Date(str);
+};
+
 export default function Messages() {
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -150,7 +158,7 @@ export default function Messages() {
       // Reverse if API returns newest first? Assuming API returns chronological or we sort.
       // Usually chat APIs return newest last or we sort by createdAt.
       // Let's sort to be safe.
-      const sorted = (data || []).sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      const sorted = (data || []).sort((a, b) => parseUTCDate(a.createdAt) - parseUTCDate(b.createdAt));
       setMessages(sorted);
 
       if (!silent) {
@@ -353,7 +361,7 @@ export default function Messages() {
                             {other?.fullName}
                           </h3>
                           <span className="text-[10px] text-gray-400">
-                            {conv.lastMessageAt ? new Date(conv.lastMessageAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                            {conv.lastMessageAt ? parseUTCDate(conv.lastMessageAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                           </span>
                         </div>
                         <p className={`text-xs truncate ${active ? 'text-blue-500/80 dark:text-blue-300/80' : 'text-gray-500 font-medium'}`}>
@@ -532,7 +540,7 @@ export default function Messages() {
                           {msg.content}
                         </div>
                         <span className={`text-[10px] text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity px-1`}>
-                          {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {parseUTCDate(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
 

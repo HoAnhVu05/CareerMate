@@ -1,4 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import ChatWidget from '../components/ChatWidget';
 import NotificationBell from '../components/NotificationBell';
@@ -8,6 +9,7 @@ export default function AdminLayout({ children }) {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -39,7 +41,103 @@ export default function AdminLayout({ children }) {
       </div>
 
       <div className="flex h-screen relative z-10">
-        {/* Sidebar */}
+        {/* Mobile Sidebar Backdrop */}
+        {showMobileSidebar && (
+          <div 
+            className="lg:hidden fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-30 transition-all animate-fade-in"
+            onClick={() => setShowMobileSidebar(false)}
+          />
+        )}
+
+        {/* Mobile Sidebar Drawer */}
+        <aside className={`lg:hidden fixed top-0 bottom-0 left-0 w-72 bg-white dark:bg-slate-950 border-r border-slate-200/50 dark:border-slate-800/50 shadow-2xl z-40 flex flex-col transition-transform duration-300 transform ${showMobileSidebar ? 'translate-x-0' : '-translate-x-full'}`}>
+          <div className="h-20 flex items-center justify-between px-6 border-b border-slate-200/50 dark:border-slate-800/50">
+            <Link to="/admin/dashboard" className="flex items-center gap-3" onClick={() => setShowMobileSidebar(false)}>
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-blue-600 text-white font-bold shadow-lg">
+                CM
+              </span>
+              <div className="flex flex-col text-left">
+                <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
+                  CareerMate
+                </span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                  Admin Console
+                </span>
+              </div>
+            </Link>
+            <button
+              onClick={() => setShowMobileSidebar(false)}
+              className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+              title="Đóng menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <nav className="flex-1 px-4 py-2 space-y-1 overflow-y-auto custom-scrollbar">
+            <div className="px-4 mb-3">
+              <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 py-2">
+                Menu chính
+              </h3>
+            </div>
+            {navItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                onClick={() => setShowMobileSidebar(false)}
+                className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 group ${isActive(item.path)
+                  ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg shadow-indigo-500/30 translate-x-1'
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:translate-x-1'
+                  }`}
+              >
+                <div className={`p-1.5 rounded-lg ${isActive(item.path)
+                  ? 'bg-white/20'
+                  : 'bg-slate-100 dark:bg-slate-800 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30'
+                  }`}>
+                  <i className={`fas ${item.icon} text-sm ${isActive(item.path)
+                    ? 'text-white'
+                    : 'text-slate-500 dark:text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400'
+                    }`} />
+                </div>
+                <span className="font-semibold">{item.label}</span>
+                {isActive(item.path) && (
+                  <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_8px_white]"></div>
+                )}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="p-4 mt-auto border-t border-slate-200/50 dark:border-slate-800/50">
+            <div className="relative p-5 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 overflow-hidden group">
+              <div className="absolute -top-10 -right-10 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl group-hover:bg-indigo-500/20 transition-all"></div>
+              <div className="flex items-center gap-3 relative z-10 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-500 flex items-center justify-center text-white font-bold shadow-lg">
+                  {user?.fullName?.charAt(0) || 'A'}
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">
+                    {user?.fullName || 'Administrator'}
+                  </span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">ADMIN ROLE</span>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setShowMobileSidebar(false);
+                  handleLogout();
+                }}
+                className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-800/50 transition-all duration-300 font-bold text-xs"
+              >
+                <i className="fas fa-sign-out-alt text-sm" />
+                <span>Đăng xuất</span>
+              </button>
+            </div>
+          </div>
+        </aside>
+
+        {/* Sidebar (Desktop) */}
         <aside className="hidden lg:flex w-72 flex-col bg-white/70 dark:bg-slate-900/60 backdrop-blur-2xl border-r border-slate-200/50 dark:border-slate-800/50 shadow-2xl transition-all duration-300">
           <div className="h-20 flex items-center px-8 mb-4">
             <Link to="/admin/dashboard" className="flex items-center gap-3 group">
@@ -126,8 +224,14 @@ export default function AdminLayout({ children }) {
           {/* Header */}
           <header className="h-20 px-8 flex items-center justify-between bg-white/40 dark:bg-slate-950/20 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50 relative z-20">
             <div className="flex items-center gap-4 lg:hidden">
-              <button className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                <i className="fas fa-bars text-lg"></i>
+              <button 
+                onClick={() => setShowMobileSidebar(true)}
+                className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                title="Mở menu"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
               </button>
               <Link to="/admin/dashboard" className="text-xl font-black bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
                 CM Admin

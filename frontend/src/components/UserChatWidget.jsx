@@ -124,9 +124,17 @@ export default function UserChatWidget() {
     return conversation.participant1;
   };
 
+  const parseUTCDate = (str) => {
+    if (!str) return new Date();
+    if (typeof str === 'string' && !str.includes('Z') && !str.includes('+') && !/-\d{2}:\d{2}$/.test(str)) {
+      return new Date(str + 'Z');
+    }
+    return new Date(str);
+  };
+
   const formatDate = (dateString) => {
     if (!dateString) return '';
-    const date = new Date(dateString);
+    const date = parseUTCDate(dateString);
     const now = new Date();
     const diff = now - date;
     const minutes = Math.floor(diff / 60000);
@@ -142,7 +150,7 @@ export default function UserChatWidget() {
 
   const formatTime = (dateString) => {
     if (!dateString) return '';
-    const date = new Date(dateString);
+    const date = parseUTCDate(dateString);
     return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
   };
 
