@@ -100,7 +100,8 @@ public class FileStorageService {
             return null;
         }
         
-        if (Paths.get(webPath).isAbsolute()) {
+        // If it already starts with our actual target storage path, return it directly
+        if (webPath.startsWith(uploadPath)) {
             return webPath;
         }
         

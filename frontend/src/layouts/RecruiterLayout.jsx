@@ -58,7 +58,7 @@ export default function RecruiterLayout({ children }) {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-white transition-colors duration-300"
       style={{
-        backgroundImage: 'radial-gradient(circle at top left, rgba(16, 185, 129, 0.05), transparent 40%), radial-gradient(circle at bottom right, rgba(20, 184, 166, 0.05), transparent 40%)',
+        backgroundImage: 'radial-gradient(circle at top left, rgba(16, 185, 129, 0.05), rgba(16, 185, 129, 0) 40%), radial-gradient(circle at bottom right, rgba(20, 184, 166, 0.05), rgba(20, 184, 166, 0) 40%)',
         backgroundAttachment: 'fixed'
       }}>
       <div className="flex h-screen overflow-hidden">
@@ -171,7 +171,7 @@ export default function RecruiterLayout({ children }) {
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-sm overflow-hidden shrink-0">
                   {user?.avatarUrl ? (
                     <img
-                      src={getFullUrl('/users/' + user.avatarUrl)}
+                      src={getFullUrl(user.avatarUrl)}
                       alt={user.fullName}
                       className="w-full h-full object-cover"
                       onError={(e) => {
@@ -294,7 +294,7 @@ export default function RecruiterLayout({ children }) {
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-sm overflow-hidden shrink-0">
                   {user?.avatarUrl ? (
                     <img
-                      src={getFullUrl('/users/' + user.avatarUrl)}
+                      src={getFullUrl(user.avatarUrl)}
                       alt={user.fullName}
                       className="w-full h-full object-cover"
                       onError={(e) => {

@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -79,9 +82,6 @@
     }
   }
 }
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
 
 @layer base {
 
@@ -297,63 +297,63 @@
   .custom-scrollbar::-webkit-scrollbar-thumb {
     @apply bg-gray-300 dark:bg-gray-700 rounded-full hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors;
   }
+}
 
-  /* Facebook-style reactions pop animation */
-  .animate-reaction-pop {
-    animation: reactionPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
-  }
+/* Facebook-style reactions pop animation */
+.animate-reaction-pop {
+  animation: reactionPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
 
-  @keyframes reactionPop {
-    0% {
-      opacity: 0;
-      transform: scale(0.5) translateY(15px) translateX(-50%);
-    }
-    100% {
-      opacity: 1;
-      transform: scale(1) translateY(0) translateX(-50%);
-    }
-  }
-
-  /* Staggered rise and bounce animation for emojis */
-  .animate-reaction-item {
-    animation: reactionItemRise 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
-  }
-
-  @keyframes reactionItemRise {
-    0% {
-      opacity: 0;
-      transform: translateY(24px) scale(0.3);
-    }
-    100% {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
-  }
-
-  /* Premium Facebook-style tooltip */
-  .emoji-tooltip {
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%) scale(0.8);
-    margin-bottom: 10px;
-    padding: 5px 12px;
-    background: rgba(15, 23, 42, 0.95);
-    color: #ffffff;
-    font-size: 11px;
-    font-weight: 700;
-    border-radius: 9999px;
+@keyframes reactionPop {
+  0% {
     opacity: 0;
-    pointer-events: none;
-    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.2);
-    white-space: nowrap;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    z-index: 50;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    transform: scale(0.5) translateY(15px) translateX(-50%);
   }
-
-  .group\/emoji:hover .emoji-tooltip {
+  100% {
     opacity: 1;
-    transform: translateX(-50%) scale(1);
+    transform: scale(1) translateY(0) translateX(-50%);
   }
+}
+
+/* Staggered rise and bounce animation for emojis */
+.animate-reaction-item {
+  animation: reactionItemRise 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+@keyframes reactionItemRise {
+  0% {
+    opacity: 0;
+    transform: translateY(24px) scale(0.3);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Premium Facebook-style tooltip */
+.emoji-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) scale(0.8);
+  margin-bottom: 10px;
+  padding: 5px 12px;
+  background: rgba(15, 23, 42, 0.95);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 9999px;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+  white-space: nowrap;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  z-index: 50;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.group\/emoji:hover .emoji-tooltip {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
 }

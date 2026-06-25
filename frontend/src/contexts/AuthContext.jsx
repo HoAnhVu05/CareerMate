@@ -4,21 +4,21 @@ import api from '../services/api';
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Load user from localStorage on mount
+  const [user, setUser] = useState(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       try {
-        setUser(JSON.parse(storedUser));
+        return JSON.parse(storedUser);
       } catch (e) {
         console.error('Error parsing user data:', e);
+        return null;
       }
     }
-    setLoading(false);
+    return null;
+  });
+  const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
     // Listen for storage changes in other tabs (prevents session crosstalk)
     const handleStorageChange = (e) => {
       if (e.key === 'user' || e.key === 'token') {
@@ -27,20 +27,21 @@ export function AuthProvider({ children }) {
 
         if (!storedUser || !storedToken) {
           // Logged out in another tab
-          if (user) {
-            console.log('Session cleared in another tab. Redirecting...');
-            setUser(null);
-            window.location.href = '/login';
-          }
+          console.log('Session cleared in another tab. Redirecting...');
+          setUser(null);
+          window.location.href = '/login';
           return;
         }
 
         try {
           const newUser = JSON.parse(storedUser);
-          if (!user || user.id !== newUser.id) {
-            console.log('Session changed in another tab. Reloading...');
-            window.location.reload();
-          }
+          setUser(prevUser => {
+            if (!prevUser || prevUser.id !== newUser.id) {
+              console.log('Session changed in another tab. Reloading...');
+              setTimeout(() => window.location.reload(), 0);
+            }
+            return newUser;
+          });
         } catch (err) {
           console.error('Error parsing changed storage user:', err);
         }
@@ -48,7 +49,7 @@ export function AuthProvider({ children }) {
     };
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
-  }, [user]);
+  }, []);
 
   const login = async (email, password) => {
     try {

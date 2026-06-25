@@ -404,7 +404,7 @@ export default function AdminDashboard() {
                     <span className="font-bold text-slate-500 dark:text-slate-400 text-sm">{item.name}</span>
                     <div className="flex items-center gap-2">
                       <span className={`text-[10px] font-black uppercase tracking-widest text-${item.color}-600 dark:text-${item.color}-400`}>{item.status}</span>
-                      <div className={`w-2 h-2 rounded-full bg-${item.color}-500 shadow-[0_0_8px_${item.color}-500] animate-pulse`}></div>
+                      <div className={`w-2 h-2 rounded-full bg-${item.color}-500 animate-pulse`} style={{ boxShadow: `0 0 8px ${item.color === 'emerald' ? '#10b981' : item.color === 'blue' ? '#3b82f6' : '#6366f1'}` }}></div>
                     </div>
                   </div>
                 ))}

@@ -119,12 +119,12 @@ export default function ArticleCard({ article, onUpdate, showFullComments = fals
 
   const getReactionEmojiUrl = (type) => {
     const urls = {
-      LIKE: 'https://cdn.jsdelivr.net/npm/@twemoji/svg@latest/1f44d.svg',
-      LOVE: 'https://cdn.jsdelivr.net/npm/@twemoji/svg@latest/2764.svg',
-      HAHA: 'https://cdn.jsdelivr.net/npm/@twemoji/svg@latest/1f602.svg',
-      WOW: 'https://cdn.jsdelivr.net/npm/@twemoji/svg@latest/1f62e.svg',
-      SAD: 'https://cdn.jsdelivr.net/npm/@twemoji/svg@latest/1f622.svg',
-      ANGRY: 'https://cdn.jsdelivr.net/npm/@twemoji/svg@latest/1f621.svg'
+      LIKE: 'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/1f44d.svg',
+      LOVE: 'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/2764.svg',
+      HAHA: 'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/1f602.svg',
+      WOW: 'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/1f62e.svg',
+      SAD: 'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/1f622.svg',
+      ANGRY: 'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/1f621.svg'
     };
     return urls[type] || urls.LIKE;
   };

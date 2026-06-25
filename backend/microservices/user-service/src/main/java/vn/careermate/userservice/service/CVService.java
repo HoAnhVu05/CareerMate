@@ -314,7 +314,7 @@ public class CVService {
         String fileName = "CV_" + fullName.replaceAll("[^a-zA-Z0-9]", "_") + "_" + UUID.randomUUID().toString().substring(0, 8) + ".html";
         byte[] htmlBytes = fullHtml.getBytes("UTF-8");
         
-        Path uploadDir = Paths.get("./uploads", "cvs");
+        Path uploadDir = Paths.get(fileStorageService.getUploadDir(), "cvs");
         if (!Files.exists(uploadDir)) {
             Files.createDirectories(uploadDir);
         }
