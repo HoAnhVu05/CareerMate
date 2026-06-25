@@ -39,7 +39,7 @@ public class ArticleController {
 
     @GetMapping
     @Transactional(readOnly = true)
-    public ResponseEntity<Page<Article>> getPublishedArticles(
+    public ResponseEntity<Page<vn.careermate.common.dto.ArticleDTO>> getPublishedArticles(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String category,
             @RequestParam(defaultValue = "0") int page,
@@ -56,8 +56,7 @@ public class ArticleController {
             
             log.info("Articles retrieved: {} total, {} in page", articles.getTotalElements(), articles.getContent().size());
             
-            // Note: Author info now fetched via Feign Client when needed
-            // No need to force load entity fields since we use UUID (authorId)
+            Page<vn.careermate.common.dto.ArticleDTO> dtos = articles.map(articleService::convertToDTO);
             
             // Log first article if exists
             if (!articles.getContent().isEmpty()) {
@@ -67,7 +66,7 @@ public class ArticleController {
                     first.getAuthorId() != null ? "Author ID: " + first.getAuthorId() : "null");
             }
             
-            return ResponseEntity.ok(articles);
+            return ResponseEntity.ok(dtos);
         } catch (Exception e) {
             log.error("ERROR in getPublishedArticles: {}", e.getMessage(), e);
             e.printStackTrace();
@@ -94,23 +93,27 @@ public class ArticleController {
 
     @GetMapping("/admin/pending")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Page<Article>> getPendingArticles(
+    public ResponseEntity<Page<vn.careermate.common.dto.ArticleDTO>> getPendingArticles(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(articleService.getPendingArticles(pageable));
+        Page<Article> articles = articleService.getPendingArticles(pageable);
+        Page<vn.careermate.common.dto.ArticleDTO> dtos = articles.map(articleService::convertToDTO);
+        return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/admin/all")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Page<Article>> getAllArticles(
+    public ResponseEntity<Page<vn.careermate.common.dto.ArticleDTO>> getAllArticles(
             @RequestParam(required = false) String status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(articleService.getAllArticles(status, pageable));
+        Page<Article> articles = articleService.getAllArticles(status, pageable);
+        Page<vn.careermate.common.dto.ArticleDTO> dtos = articles.map(articleService::convertToDTO);
+        return ResponseEntity.ok(dtos);
     }
 
     @PutMapping("/{articleId}")
@@ -220,12 +223,14 @@ public class ArticleController {
 
     @GetMapping("/my")
     @PreAuthorize("hasRole('RECRUITER') or hasRole('ADMIN')")
-    public ResponseEntity<Page<Article>> getMyArticles(
+    public ResponseEntity<Page<vn.careermate.common.dto.ArticleDTO>> getMyArticles(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(articleService.getMyArticles(pageable));
+        Page<Article> articles = articleService.getMyArticles(pageable);
+        Page<vn.careermate.common.dto.ArticleDTO> dtos = articles.map(articleService::convertToDTO);
+        return ResponseEntity.ok(dtos);
     }
 
     @PostMapping("/{articleId}/comments")

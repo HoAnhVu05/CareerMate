@@ -115,12 +115,12 @@ export default function ArticleDetail({ articleId: propId, isModal, onClose }) {
 
   const getReactionEmojiUrl = (type) => {
     const urls = {
-      LIKE: 'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/1f44d.svg',
-      LOVE: 'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/2764.svg',
-      HAHA: 'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/1f602.svg',
-      WOW: 'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/1f62e.svg',
-      SAD: 'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/1f622.svg',
-      ANGRY: 'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/1f621.svg'
+      LIKE: 'https://cdn.jsdelivr.net/gh/jdecked/twemoji@14.1.2/assets/svg/1f44d.svg',
+      LOVE: 'https://cdn.jsdelivr.net/gh/jdecked/twemoji@14.1.2/assets/svg/2764.svg',
+      HAHA: 'https://cdn.jsdelivr.net/gh/jdecked/twemoji@14.1.2/assets/svg/1f602.svg',
+      WOW: 'https://cdn.jsdelivr.net/gh/jdecked/twemoji@14.1.2/assets/svg/1f62e.svg',
+      SAD: 'https://cdn.jsdelivr.net/gh/jdecked/twemoji@14.1.2/assets/svg/1f622.svg',
+      ANGRY: 'https://cdn.jsdelivr.net/gh/jdecked/twemoji@14.1.2/assets/svg/1f621.svg'
     };
     return urls[type] || urls.LIKE;
   };
@@ -150,6 +150,45 @@ export default function ArticleDetail({ articleId: propId, isModal, onClose }) {
   const [reactionCounts, setReactionCounts] = useState({});
   const [myReaction, setMyReaction] = useState(null);
   const [showReactionPicker, setShowReactionPicker] = useState(false);
+
+  const longPressTimerRef = useRef(null);
+  const isLongPressRef = useRef(false);
+
+  const handleTouchStart = (e) => {
+    isLongPressRef.current = false;
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+    }
+    longPressTimerRef.current = setTimeout(() => {
+      isLongPressRef.current = true;
+      setShowReactionPicker(true);
+      if (navigator.vibrate) {
+        try {
+          navigator.vibrate(50);
+        } catch (err) {
+          // ignore
+        }
+      }
+    }, 500);
+  };
+
+  const handleTouchEnd = (e) => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    if (isLongPressRef.current) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+
+  const handleTouchMove = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  };
 
   // Helper to get initials
   const getInitials = (name) => {
@@ -534,7 +573,11 @@ export default function ArticleDetail({ articleId: propId, isModal, onClose }) {
         >
           <button
             onClick={() => handleReaction(myReaction ? null : 'LIKE')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-200 ${
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+            onTouchMove={handleTouchMove}
+            onContextMenu={(e) => e.preventDefault()}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-200 select-none ${
               myReaction
                 ? 'bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-gray-800 dark:to-gray-800 text-blue-700 dark:text-blue-300 font-bold shadow-sm scale-105'
                 : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 font-semibold'
@@ -543,19 +586,21 @@ export default function ArticleDetail({ articleId: propId, isModal, onClose }) {
             {myReaction ? (
               <img 
                 src={getReactionEmojiUrl(myReaction.reactionType)} 
-                className="w-5 h-5 object-contain" 
+                onContextMenu={(e) => e.preventDefault()}
+                className="w-5 h-5 object-contain select-none" 
                 alt={myReaction.reactionType} 
               />
             ) : (
-              <span className="text-lg">👍</span>
+              <span className="text-lg select-none">👍</span>
             )}
-            <span>{myReaction ? getReactionLabel(myReaction.reactionType) : 'Thích'}</span>
+            <span className="select-none">{myReaction ? getReactionLabel(myReaction.reactionType) : 'Thích'}</span>
           </button>
 
           {/* Facebook-style Reaction Picker */}
           {showReactionPicker && (
             <div 
-              className="absolute right-0 bottom-full mb-2 flex items-center gap-2 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-full shadow-2xl px-3 py-2 border border-slate-100 dark:border-slate-800 z-30 animate-reaction-pop origin-bottom"
+              onContextMenu={(e) => e.preventDefault()}
+              className="absolute right-0 bottom-full mb-2 flex items-center gap-2 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-full shadow-2xl px-3 py-2 border border-slate-100 dark:border-slate-800 z-30 animate-reaction-pop origin-bottom select-none"
             >
               {[
                 { type: 'LIKE', label: 'Thích' },
@@ -572,7 +617,8 @@ export default function ArticleDetail({ articleId: propId, isModal, onClose }) {
                     handleReaction(item.type);
                     setShowReactionPicker(false);
                   }}
-                  className="relative group/emoji hover:scale-150 hover:-translate-y-2.5 transition-all duration-300 p-1.5 flex items-center justify-center rounded-full active:scale-95 animate-reaction-item"
+                  onContextMenu={(e) => e.preventDefault()}
+                  className="relative group/emoji hover:scale-150 hover:-translate-y-2.5 transition-all duration-300 p-1.5 flex items-center justify-center rounded-full active:scale-95 animate-reaction-item select-none"
                   title={item.label}
                   style={{
                     animationDelay: `${idx * 40}ms`
@@ -580,10 +626,11 @@ export default function ArticleDetail({ articleId: propId, isModal, onClose }) {
                 >
                   <img 
                     src={getReactionEmojiUrl(item.type)} 
+                    onContextMenu={(e) => e.preventDefault()}
                     className="w-9 h-9 object-contain filter drop-shadow-sm select-none" 
                     alt={item.label} 
                   />
-                  <span className="emoji-tooltip">
+                  <span className="emoji-tooltip select-none">
                     {item.label}
                   </span>
                 </button>

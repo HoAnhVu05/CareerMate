@@ -191,7 +191,7 @@ public class ArticleService {
         return convertToDTO(article);
     }
 
-    private vn.careermate.common.dto.ArticleDTO convertToDTO(Article article) {
+    public vn.careermate.common.dto.ArticleDTO convertToDTO(Article article) {
         vn.careermate.common.dto.ArticleDTO dto = vn.careermate.common.dto.ArticleDTO.builder()
                 .id(article.getId())
                 .authorId(article.getAuthorId())
