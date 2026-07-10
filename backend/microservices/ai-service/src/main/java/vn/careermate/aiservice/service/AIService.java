@@ -821,42 +821,80 @@ public class AIService {
     }
 
     /**
+     * Check if a message is career-related using AI classification
+     */
+    private boolean isCareerRelated(String message) {
+        String classifierPrompt =
+            "Bạn là bộ phân loại chủ đề. Nhiệm vụ duy nhất của bạn là xác định xem câu hỏi có liên quan đến " +
+            "nghề nghiệp, việc làm, tuyển dụng, CV, phỏng vấn, kỹ năng nghề nghiệp, học tập chuyên môn, " +
+            "lộ trình sự nghiệp, hay phát triển bản thân trong công việc hay không.\n\n" +
+            "QUY TẮC PHÂN LOẠI NGHIÊM NGẶT:\n" +
+            "- Các chủ đề ĐƯỢC PHÉP: CV, xin việc, phỏng vấn, kỹ năng lập trình/thiết kế/marketing, " +
+            "lộ trình học tập, tuyển dụng, nghề nghiệp, tìm việc, lương thưởng, phát triển kỹ năng chuyên môn.\n" +
+            "- Các chủ đề KHÔNG ĐƯỢC PHÉP: tình yêu, tán gái/tán trai, nấu ăn, thể thao, giải trí, " +
+            "phim ảnh, âm nhạc, chính trị, tôn giáo, sức khỏe cá nhân, du lịch, game, meme, " +
+            "bài tập về nhà không liên quan đến nghề nghiệp, câu hỏi thường thức.\n" +
+            "- KHÔNG chấp nhận các câu hỏi cố tình gắn nhãn 'kỹ năng mềm' hay 'phát triển bản thân' " +
+            "vào các chủ đề không liên quan đến công việc (ví dụ: 'tán gái' KHÔNG phải kỹ năng mềm nghề nghiệp).\n\n" +
+            "Câu hỏi cần phân loại: \"" + message + "\"\n\n" +
+            "Trả lời CHỈ bằng một từ duy nhất: YES (nếu liên quan đến nghề nghiệp) hoặc NO (nếu không liên quan).";
+        try {
+            String result = callAIAPI(classifierPrompt);
+            if (result == null) return false;
+            String trimmed = result.trim().toUpperCase();
+            // Accept YES if the response starts with YES
+            return trimmed.startsWith("YES");
+        } catch (Exception e) {
+            log.warn("Topic classifier failed, defaulting to allow: {}", e.getMessage());
+            return true; // Fail open – nếu classifier lỗi thì cho qua
+        }
+    }
+
+    /**
      * Chat with AI based on role and context
      */
     public String chat(String message, String context, String role) {
-        // Build context-specific prompt
+        // ── STEP 1: Topic Classification (Hard Guardrail) ──────────────────
+        if (!isCareerRelated(message)) {
+            log.info("Off-topic message blocked for role={}: {}", role, message);
+            return "Xin lỗi, tôi là Career AI Coach của CareerMate và chỉ có thể hỗ trợ các vấn đề " +
+                "liên quan đến **nghề nghiệp và tìm việc làm** như: phân tích CV, chuẩn bị phỏng vấn, " +
+                "định hướng sự nghiệp, và phát triển kỹ năng chuyên môn.\n\n" +
+                "Bạn có muốn tôi giúp gì về CV, phỏng vấn hay lộ trình nghề nghiệp không? 😊";
+        }
+
+        // ── STEP 2: Build role-specific system prompt ────────────────────────
         String systemPrompt = "";
         switch (role.toUpperCase()) {
             case "STUDENT":
-                systemPrompt = "Bạn là Career AI Coach, một trợ lý tư vấn nghề nghiệp thông minh và thân thiện. " +
-                    "Bạn giúp sinh viên:\n" +
-                    "- Phân tích và cải thiện CV\n" +
-                    "- Tư vấn nghề nghiệp và định hướng\n" +
-                    "- Đề xuất kỹ năng cần phát triển\n" +
-                    "- Luyện tập phỏng vấn\n" +
-                    "- Tạo lộ trình nghề nghiệp\n\n" +
-                    "Hãy trả lời một cách nhiệt tình, chi tiết và hữu ích. Sử dụng tiếng Việt.";
+                systemPrompt = "Bạn là Career AI Coach trên nền tảng CareerMate. " +
+                    "Bạn giúp sinh viên phân tích CV, tư vấn nghề nghiệp, định hướng học tập, " +
+                    "luyện tập phỏng vấn và tạo lộ trình sự nghiệp.\n\n" +
+                    "GIỚI HẠN TUYỆT ĐỐI: Bạn KHÔNG được trả lời bất kỳ câu hỏi nào nằm ngoài lĩnh vực " +
+                    "nghề nghiệp và việc làm. KHÔNG được dùng lý lẽ để biến câu hỏi ngoài phạm vi " +
+                    "thành 'kỹ năng nghề nghiệp'. Ví dụ: cách tán trai/gái, nấu ăn, game, giải trí " +
+                    "đều KHÔNG thuộc phạm vi và phải từ chối thẳng thắn.\n\n" +
+                    "Hãy trả lời nhiệt tình, chi tiết, hữu ích bằng tiếng Việt.";
                 break;
             case "RECRUITER":
-                systemPrompt = "Bạn là AI Assistant cho Nhà tuyển dụng. " +
-                    "Bạn giúp nhà tuyển dụng:\n" +
-                    "- Tìm ứng viên phù hợp\n" +
-                    "- Phân tích CV ứng viên\n" +
-                    "- Đề xuất câu hỏi phỏng vấn\n" +
-                    "- Đánh giá ứng viên\n\n" +
-                    "Hãy trả lời một cách chuyên nghiệp và hữu ích. Sử dụng tiếng Việt.";
+                systemPrompt = "Bạn là AI Assistant cho Nhà tuyển dụng trên CareerMate. " +
+                    "Bạn giúp tìm ứng viên, phân tích CV, soạn JD, đề xuất câu hỏi phỏng vấn, " +
+                    "xây dựng quy trình tuyển dụng.\n\n" +
+                    "GIỚI HẠN TUYỆT ĐỐI: Chỉ trả lời câu hỏi liên quan đến tuyển dụng và nhân sự. " +
+                    "Từ chối thẳng thắn mọi câu hỏi ngoài phạm vi này.\n\n" +
+                    "Hãy trả lời chuyên nghiệp, hữu ích bằng tiếng Việt.";
                 break;
             case "ADMIN":
-                systemPrompt = "Bạn là AI Assistant cho Quản trị viên hệ thống. " +
-                    "Bạn giúp admin:\n" +
-                    "- Phân tích dữ liệu hệ thống\n" +
-                    "- Đề xuất cải thiện\n" +
-                    "- Hỗ trợ quản lý người dùng\n" +
-                    "- Báo cáo và thống kê\n\n" +
-                    "Hãy trả lời một cách chính xác và chi tiết. Sử dụng tiếng Việt.";
+                systemPrompt = "Bạn là AI Assistant cho Quản trị viên CareerMate. " +
+                    "Bạn giúp phân tích dữ liệu hệ thống, đề xuất cải thiện nền tảng, " +
+                    "hỗ trợ quản lý người dùng và báo cáo thống kê.\n\n" +
+                    "GIỚI HẠN TUYỆT ĐỐI: Chỉ trả lời câu hỏi liên quan đến quản trị CareerMate. " +
+                    "Từ chối thẳng thắn mọi câu hỏi ngoài phạm vi này.\n\n" +
+                    "Hãy trả lời chính xác, chi tiết bằng tiếng Việt.";
                 break;
             default:
-                systemPrompt = "Bạn là AI Assistant hữu ích. Hãy trả lời câu hỏi một cách chi tiết và hữu ích. Sử dụng tiếng Việt.";
+                systemPrompt = "Bạn là AI Assistant của CareerMate. CHỈ trả lời câu hỏi về nghề nghiệp, " +
+                    "việc làm, CV và tuyển dụng. Từ chối mọi câu hỏi ngoài phạm vi. Sử dụng tiếng Việt.";
         }
 
         String prompt = systemPrompt + "\n\nCâu hỏi của người dùng: " + message;
