@@ -4,6 +4,10 @@ server:
 spring:
   application:
     name: api-gateway
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
   cloud:
     gateway:
       httpclient:
@@ -17,6 +21,11 @@ spring:
             - Path=/api/users/**, /api/auth/**, /api/students/**, /api/recruiters/**, /api/messaging/**, /api/uploads/**
           filters:
             - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 30
+                redis-rate-limiter.burstCapacity: 60
+                key-resolver: "#{@ipKeyResolver}"
         
         # Job Service
         - id: job-service
@@ -25,6 +34,11 @@ spring:
             - Path=/api/jobs/**, /api/applications/**
           filters:
             - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 30
+                redis-rate-limiter.burstCapacity: 60
+                key-resolver: "#{@ipKeyResolver}"
         
         # Content Service
         - id: content-service
@@ -33,6 +47,11 @@ spring:
             - Path=/api/articles/**, /api/companies/**
           filters:
             - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 30
+                redis-rate-limiter.burstCapacity: 60
+                key-resolver: "#{@ipKeyResolver}"
         
         # Learning Service
         - id: learning-service
@@ -41,6 +60,11 @@ spring:
             - Path=/api/courses/**, /api/challenges/**, /api/cv-templates/**, /api/packages/**, /api/course-content/**
           filters:
             - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 30
+                redis-rate-limiter.burstCapacity: 60
+                key-resolver: "#{@ipKeyResolver}"
         
         # Admin Service
         - id: admin-service
@@ -49,6 +73,11 @@ spring:
             - Path=/api/admin/**
           filters:
             - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                key-resolver: "#{@ipKeyResolver}"
         
         # Notification Service
         - id: notification-service
@@ -57,6 +86,11 @@ spring:
             - Path=/api/notifications/**, /api/messages/**
           filters:
             - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 30
+                redis-rate-limiter.burstCapacity: 60
+                key-resolver: "#{@ipKeyResolver}"
         
         # AI Service
         - id: ai-service
@@ -65,6 +99,11 @@ spring:
             - Path=/api/ai/**, /api/career-roadmap/**
           filters:
             - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 5
+                redis-rate-limiter.burstCapacity: 10
+                key-resolver: "#{@ipKeyResolver}"
       # Disable Spring Cloud Gateway's default CORS handling
       globalcors:
         cors-configurations:
