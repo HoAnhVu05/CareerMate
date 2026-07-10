@@ -821,36 +821,65 @@ public class AIService {
     }
 
     /**
-     * Check if a message is career-related using AI classification
+     * Check if a message is career-related using a keyword blacklist.
+     * This runs ENTIRELY in Java (no API call) – instant and never times out.
      */
     private boolean isCareerRelated(String message) {
-        String classifierPrompt =
-            "Bạn là bộ phân loại chủ đề. Nhiệm vụ duy nhất của bạn là xác định xem câu hỏi có liên quan đến " +
-            "nghề nghiệp, việc làm, tuyển dụng, CV, phỏng vấn, kỹ năng nghề nghiệp, học tập chuyên môn, " +
-            "lộ trình sự nghiệp, hay phát triển bản thân trong công việc hay không.\n\n" +
-            "QUY TẮC PHÂN LOẠI NGHIÊM NGẶT:\n" +
-            "- Các chủ đề ĐƯỢC PHÉP: CV, xin việc, phỏng vấn, kỹ năng lập trình/thiết kế/marketing, " +
-            "lộ trình học tập, tuyển dụng, nghề nghiệp, tìm việc, lương thưởng, phát triển kỹ năng chuyên môn.\n" +
-            "- Các chủ đề KHÔNG ĐƯỢC PHÉP: tình yêu, tán gái/tán trai, nấu ăn, thể thao, giải trí, " +
-            "phim ảnh, âm nhạc, chính trị, tôn giáo, sức khỏe cá nhân, du lịch, game, meme, " +
-            "bài tập về nhà không liên quan đến nghề nghiệp, câu hỏi thường thức.\n" +
-            "- KHÔNG chấp nhận các câu hỏi cố tình gắn nhãn 'kỹ năng mềm' hay 'phát triển bản thân' " +
-            "vào các chủ đề không liên quan đến công việc (ví dụ: 'tán gái' KHÔNG phải kỹ năng mềm nghề nghiệp).\n\n" +
-            "Câu hỏi cần phân loại: \"" + message + "\"\n\n" +
-            "Trả lời CHỈ bằng một từ duy nhất: YES (nếu liên quan đến nghề nghiệp) hoặc NO (nếu không liên quan).";
-        try {
-            String result = callAIAPI(classifierPrompt);
-            if (result == null) return false;
-            String trimmed = result.trim().toUpperCase();
-            // Accept YES if the response starts with YES
-            return trimmed.startsWith("YES");
-        } catch (Exception e) {
-            log.warn("Topic classifier failed, defaulting to allow: {}", e.getMessage());
-            return true; // Fail open – nếu classifier lỗi thì cho qua
+        if (message == null || message.trim().isEmpty()) return false;
+        String lower = message.toLowerCase().trim();
+
+        // ── Danh sách từ khóa KHÔNG liên quan đến nghề nghiệp ──────────────
+        String[] offTopicKeywords = {
+            // Tình cảm / Quan hệ cá nhân
+            "tán gái", "tán trai", "tán đổ", "thả thính", "bắt chuyện",
+            "crush", "người yêu", "bạn trai", "bạn gái", "chia tay",
+            "yêu đương", "hẹn hò", "cầu hôn", "lấy vợ", "lấy chồng",
+            "tình yêu", "tình cảm", "con tim", "mối tình",
+
+            // Giải trí / Game
+            "liên quân", "liên minh huyền thoại", "lol", "pubg", "free fire",
+            "minecraft", "roblox", "genshin", "anime", "manga",
+            "phim", "xem phim", "series", "netflix", "youtube",
+            "tiktok", "nhạc", "bài hát", "ca sĩ", "idol",
+            "game", "gaming", "esport",
+
+            // Ẩm thực / Nấu ăn
+            "nấu ăn", "công thức", "món ăn", "ăn gì", "nhà hàng",
+            "quán ăn", "đặt đồ ăn", "recipe", "cooking", "food",
+
+            // Thể thao / Sức khỏe cá nhân
+            "bóng đá", "bóng rổ", "cầu lông", "gym", "tập gym",
+            "giảm cân", "giảm béo", "tăng cơ", "ăn kiêng", "diet",
+            "thể thao", "sport",
+
+            // Chính trị / Tôn giáo
+            "chính trị", "đảng phái", "tổng thống", "chính phủ",
+            "tôn giáo", "phật giáo", "thiên chúa", "hồi giáo",
+
+            // Du lịch / Tài chính cá nhân (không liên quan nghề nghiệp)
+            "du lịch", "đi chơi", "nghỉ dưỡng", "resort", "khách sạn",
+            "cổ phiếu", "crypto", "bitcoin", "đầu tư chứng khoán",
+            "lô đề", "cá cược", "cờ bạc",
+
+            // Bài tập / Homework không liên quan đến nghề nghiệp
+            "giải toán", "làm bài tập", "toán học", "vật lý", "hóa học",
+            "sinh học", "lịch sử", "địa lý",
+
+            // Nội dung 18+ / Không phù hợp
+            "sex", "khiêu dâm", "18+", "người lớn",
+        };
+
+        for (String kw : offTopicKeywords) {
+            if (lower.contains(kw)) {
+                log.info("[Guardrail] Blocked off-topic keyword '{}' in message: {}", kw, message);
+                return false;
+            }
         }
+        return true; // Cho phép đi tiếp nếu không khớp keyword nào
     }
 
     /**
+
      * Chat with AI based on role and context
      */
     public String chat(String message, String context, String role) {
