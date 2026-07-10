@@ -30,7 +30,7 @@ public class SecurityConfig {
                 .requestMatchers("/ai/students/mock-interview/**").permitAll() // Explicitly allow mock interview
                 .requestMatchers("/ai/**").permitAll() // Allow all AI endpoints without auth
                 .requestMatchers("/chat/**").permitAll()
-                .anyRequest().authenticated()
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll().anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

@@ -124,3 +124,15 @@ logging:
   level:
     org.springframework.cloud.gateway: DEBUG
     org.springframework.web: DEBUG
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+  gateway:
+    discovery:
+      enabled: true
+      locator:
+        enabled: true

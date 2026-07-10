@@ -121,7 +121,7 @@ services:
       - MAIL_PORT=${MAIL_PORT:-587}
       - MAIL_USERNAME=${MAIL_USERNAME}
       - MAIL_PASSWORD=${MAIL_PASSWORD}
-      - BASE_URL=http://${EC2_PUBLIC_IP:-localhost}:8080
+      - BASE_URL=https://${EC2_PUBLIC_IP:-localhost}
       - STORAGE_PATH=/app/uploads
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
     volumes:
@@ -306,7 +306,7 @@ services:
     container_name: careermate-frontend
 #    restart: unless-stopped
     ports:
-      - "80:80"
+      - "8081:80"
     depends_on:
       - api-gateway
     deploy:

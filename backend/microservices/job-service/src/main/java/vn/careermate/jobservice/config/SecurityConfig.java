@@ -29,7 +29,7 @@ public class SecurityConfig {
                 // Public endpoints (after StripPrefix=1, /api/jobs -> /jobs, /api/applications -> /applications)
                 .requestMatchers(HttpMethod.GET, "/jobs", "/jobs/**").permitAll() // Public job search and view (GET /jobs, GET /jobs/{id})
                 // All other endpoints require authentication (will be checked by @PreAuthorize)
-                .anyRequest().authenticated()
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll().anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

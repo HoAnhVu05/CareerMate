@@ -36,3 +36,8 @@ logs/
 # Temp files
 *.tmp
 *.bak
+
+# Backups, Database Dumps, Docs
+.env.backup
+*.sql
+*.docx
