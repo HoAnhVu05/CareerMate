@@ -1,0 +1,52 @@
+name: CareerMate CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Build and Test Microservices
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build Common Module
+        run: |
+          cd backend/microservices/common
+          mvn clean install -DskipTests -q
+
+      - name: Test AI Service
+        run: |
+          cd backend/microservices/ai-service
+          mvn test
+
+      - name: Test Notification Service
+        run: |
+          cd backend/microservices/notification-service
+          mvn test
+
+  deploy:
+    name: Deploy to EC2 Server
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/CareerMate
+            git checkout -- .
+            git pull origin main
+            docker compose up -d --build
