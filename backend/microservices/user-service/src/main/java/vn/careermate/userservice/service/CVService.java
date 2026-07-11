@@ -114,7 +114,7 @@ public class CVService {
         // Analyze CV with AI (async) - via Feign Client
         try {
             // Use extracted content for analysis
-            aiServiceClient.analyzeCV(cv.getId(), extractedText);
+            aiServiceClient.analyzeCV(cv.getId(), Map.of("content", extractedText));
         } catch (Exception e) {
             log.warn("Failed to analyze CV with AI service: {}", e.getMessage());
             // Continue without AI analysis

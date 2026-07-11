@@ -10,8 +10,8 @@ import java.util.UUID;
 
 @FeignClient(name = "ai-service")
 public interface AIServiceClient {
-    @PostMapping("/ai/analyze-cv")
-    CVAnalysisDTO analyzeCV(@RequestParam UUID cvId, @RequestParam String cvContent);
+    @PostMapping("/ai/cv/analyze/{cvId}")
+    java.util.Map<String, Object> analyzeCV(@PathVariable("cvId") UUID cvId, @RequestBody java.util.Map<String, String> request);
     
     @GetMapping("/ai/job-recommendations/{studentId}")
     List<JobRecommendationDTO> getJobRecommendations(@PathVariable UUID studentId);

@@ -1,6 +1,6 @@
 package vn.careermate.gateway.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 import java.util.Map;
@@ -8,7 +8,7 @@ import java.util.Map;
 @RestController
 public class FallbackController {
 
-    @GetMapping("/fallback/user-service")
+    @RequestMapping("/fallback/user-service")
     public Mono<Map<String, Object>> userServiceFallback() {
         return Mono.just(Map.of(
             "status", 503,
@@ -17,7 +17,7 @@ public class FallbackController {
         ));
     }
 
-    @GetMapping("/fallback/job-service")
+    @RequestMapping("/fallback/job-service")
     public Mono<Map<String, Object>> jobServiceFallback() {
         return Mono.just(Map.of(
             "status", 503,
@@ -26,7 +26,7 @@ public class FallbackController {
         ));
     }
 
-    @GetMapping("/fallback/ai-service")
+    @RequestMapping("/fallback/ai-service")
     public Mono<Map<String, Object>> aiServiceFallback() {
         return Mono.just(Map.of(
             "status", 503,
@@ -35,7 +35,7 @@ public class FallbackController {
         ));
     }
 
-    @GetMapping("/fallback/content-service")
+    @RequestMapping("/fallback/content-service")
     public Mono<Map<String, Object>> contentServiceFallback() {
         return Mono.just(Map.of(
             "status", 503,
@@ -44,7 +44,7 @@ public class FallbackController {
         ));
     }
 
-    @GetMapping("/fallback/learning-service")
+    @RequestMapping("/fallback/learning-service")
     public Mono<Map<String, Object>> learningServiceFallback() {
         return Mono.just(Map.of(
             "status", 503,
@@ -53,7 +53,7 @@ public class FallbackController {
         ));
     }
 
-    @GetMapping("/fallback/notification-service")
+    @RequestMapping("/fallback/notification-service")
     public Mono<Map<String, Object>> notificationServiceFallback() {
         return Mono.just(Map.of(
             "status", 503,
@@ -62,7 +62,7 @@ public class FallbackController {
         ));
     }
 
-    @GetMapping("/fallback/admin-service")
+    @RequestMapping("/fallback/admin-service")
     public Mono<Map<String, Object>> adminServiceFallback() {
         return Mono.just(Map.of(
             "status", 503,
