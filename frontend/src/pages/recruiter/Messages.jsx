@@ -27,24 +27,82 @@ export default function Messages() {
   const messagesEndRef = useRef(null);
   const pollingIntervalRef = useRef(null);
   const menuRef = useRef(null);
+  const socketRef = useRef(null);
 
   useEffect(() => {
     loadConversations();
     loadUnreadCount();
 
-    // Poll for new messages every 5 seconds
+    // Slower polling for conversations list and unread badge (15s instead of 5s)
     pollingIntervalRef.current = setInterval(() => {
-      if (selectedConversation) {
-        loadMessages(selectedConversation.id);
-      }
       loadUnreadCount();
-      loadConversations();
-    }, 5000);
+      loadConversations(true);
+    }, 15000);
 
     return () => {
       if (pollingIntervalRef.current) {
         clearInterval(pollingIntervalRef.current);
       }
+    };
+  }, []);
+
+  // WebSocket Connection for selected conversation
+  useEffect(() => {
+    if (!selectedConversation) return;
+
+    // Fetch initial messages once
+    loadMessages(selectedConversation.id);
+
+    // Determine WS Protocol & Host
+    const wsProto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsHost = window.location.port && window.location.port !== '80' && window.location.port !== '443'
+      ? `${window.location.hostname}:8080`
+      : window.location.host;
+
+    const wsUrl = `${wsProto}//${wsHost}/ws/chat?conversationId=${selectedConversation.id}`;
+    console.log("Connecting to WebSocket:", wsUrl);
+
+    const ws = new WebSocket(wsUrl);
+    socketRef.current = ws;
+
+    ws.onmessage = (event) => {
+      try {
+        const newMessage = JSON.parse(event.data);
+        setMessages(prev => {
+          // Prevent duplicates
+          if (prev.some(m => m.id === newMessage.id || (!m.isTemp && m.content === newMessage.content && m.sender?.id === newMessage.senderId))) {
+            return prev;
+          }
+          // Remove optimistic message if matches
+          const filtered = prev.filter(m => !(m.isTemp && m.content === newMessage.content));
+          return [...filtered, {
+            id: newMessage.id,
+            content: newMessage.content,
+            sender: {
+              id: newMessage.senderId,
+              fullName: newMessage.senderName
+            },
+            createdAt: newMessage.createdAt
+          }];
+        });
+
+        // Trigger silent load conversations to update sidebar
+        loadConversations(true);
+      } catch (e) {
+        console.error("Error parsing websocket message data", e);
+      }
+    };
+
+    ws.onerror = (error) => {
+      console.error("WebSocket connection error:", error);
+    };
+
+    ws.onclose = () => {
+      console.log("WebSocket connection closed for conversation:", selectedConversation.id);
+    };
+
+    return () => {
+      if (ws) ws.close();
     };
   }, [selectedConversation]);
 
@@ -226,13 +284,10 @@ export default function Messages() {
 
     try {
       await api.sendMessage(selectedConversation.id, content);
-      await loadMessages(selectedConversation.id);
 
       // Update last message preview immediately
       const preview = content.length > 50 ? content.substring(0, 50) + '...' : content;
       setLastMessages(prev => ({ ...prev, [selectedConversation.id]: preview }));
-
-      await loadConversations();
     } catch (error) {
       console.error('Error sending message:', error);
       alert('Lỗi: ' + (error.response?.data?.error || 'Không thể gửi tin nhắn'));

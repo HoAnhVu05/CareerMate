@@ -37,24 +37,82 @@ export default function Messages() {
   const messagesEndRef = useRef(null);
   const pollingIntervalRef = useRef(null);
   const menuRef = useRef(null);
+  const socketRef = useRef(null);
 
   useEffect(() => {
     loadConversations();
     loadUnreadCount();
 
-    // Poll for new messages every 3 seconds (faster for chat)
+    // Slower polling for conversations list and unread badge (15s instead of 3s)
     pollingIntervalRef.current = setInterval(() => {
-      if (selectedConversation) {
-        loadMessages(selectedConversation.id, true); // silent load
-      }
       loadUnreadCount();
-      loadConversations(true); // silent load
-    }, 3000);
+      loadConversations(true);
+    }, 15000);
 
     return () => {
       if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
     };
-  }, [selectedConversation]); // Re-create poll if selected changes (closure capture)
+  }, []);
+
+  // WebSocket Connection for selected conversation
+  useEffect(() => {
+    if (!selectedConversation) return;
+
+    // Fetch initial messages once
+    loadMessages(selectedConversation.id);
+
+    // Determine WS Protocol & Host
+    const wsProto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsHost = window.location.port && window.location.port !== '80' && window.location.port !== '443'
+      ? `${window.location.hostname}:8080`
+      : window.location.host;
+
+    const wsUrl = `${wsProto}//${wsHost}/ws/chat?conversationId=${selectedConversation.id}`;
+    console.log("Connecting to WebSocket:", wsUrl);
+
+    const ws = new WebSocket(wsUrl);
+    socketRef.current = ws;
+
+    ws.onmessage = (event) => {
+      try {
+        const newMessage = JSON.parse(event.data);
+        setMessages(prev => {
+          // Prevent duplicates
+          if (prev.some(m => m.id === newMessage.id || (!m.isTemp && m.content === newMessage.content && m.sender?.id === newMessage.senderId))) {
+            return prev;
+          }
+          // Remove optimistic message if matches
+          const filtered = prev.filter(m => !(m.isTemp && m.content === newMessage.content));
+          return [...filtered, {
+            id: newMessage.id,
+            content: newMessage.content,
+            sender: {
+              id: newMessage.senderId,
+              fullName: newMessage.senderName
+            },
+            createdAt: newMessage.createdAt
+          }];
+        });
+
+        // Trigger silent load conversations to update sidebar
+        loadConversations(true);
+      } catch (e) {
+        console.error("Error parsing websocket message data", e);
+      }
+    };
+
+    ws.onerror = (error) => {
+      console.error("WebSocket connection error:", error);
+    };
+
+    ws.onclose = () => {
+      console.log("WebSocket connection closed for conversation:", selectedConversation.id);
+    };
+
+    return () => {
+      if (ws) ws.close();
+    };
+  }, [selectedConversation]);
 
   // Auto-select conversation from URL or State
   useEffect(() => {
@@ -195,12 +253,12 @@ export default function Messages() {
 
     try {
       await api.sendMessage(selectedConversation.id, content);
-      loadMessages(selectedConversation.id, true);
       // Update sidebar preview
       setLastMessages(prev => ({ ...prev, [selectedConversation.id]: content }));
     } catch (error) {
       console.error('Send failed:', error);
-      // Remove temp message?
+      // Remove temp message on error
+      setMessages(prev => prev.filter(m => m.id !== tempMsg.id));
     }
   };
 
