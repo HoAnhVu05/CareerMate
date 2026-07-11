@@ -41,6 +41,7 @@ public class SecurityConfig {
                 .requestMatchers(AntPathRequestMatcher.antMatcher("/users/uploads/**")).permitAll()
                 .requestMatchers(AntPathRequestMatcher.antMatcher("/error")).permitAll()
                 .requestMatchers(AntPathRequestMatcher.antMatcher("/api/setup/**")).permitAll()
+                .requestMatchers(AntPathRequestMatcher.antMatcher("/users/**")).permitAll()
                 .requestMatchers(AntPathRequestMatcher.antMatcher("/recruiters/experts")).permitAll()
                 .requestMatchers(AntPathRequestMatcher.antMatcher("/api/recruiters/experts")).permitAll()
                 .requestMatchers(org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher("/v3/api-docs/**"), org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher("/v3/api-docs"), org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher("/swagger-ui/**"), org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher("/swagger-ui.html")).permitAll().anyRequest().authenticated()

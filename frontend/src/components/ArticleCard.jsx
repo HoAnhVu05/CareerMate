@@ -255,7 +255,11 @@ export default function ArticleCard({ article, onUpdate, showFullComments = fals
   const loadAuthorInfo = async () => {
     try {
       const authorDisplayName = await api.getAuthorDisplayName(article.id);
-      setAuthorName(authorDisplayName);
+      if (typeof authorDisplayName === 'string') {
+        setAuthorName(authorDisplayName);
+      } else {
+        setAuthorName(article.author?.fullName || 'Người dùng');
+      }
 
       // Get author avatar - for RECRUITER, prioritize company logo over user avatar
       if (article.author) {
@@ -273,7 +277,7 @@ export default function ArticleCard({ article, onUpdate, showFullComments = fals
 
             if (companyInfo?.logoUrl) {
               setAuthorAvatar(getFullUrl(companyInfo.logoUrl));
-              if (companyInfo.name) {
+              if (companyInfo.name && typeof companyInfo.name === 'string') {
                 setAuthorName(companyInfo.name);
               }
               return; // Exit early if we have company logo
