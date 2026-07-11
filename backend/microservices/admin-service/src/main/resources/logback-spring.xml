@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    
+    <springProperty scope="context" name="springAppName" source="spring.application.name"/>
+    
+    <!-- Console Appender in JSON format -->
+    <appender name="jsonConsole" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp>
+                    <timeZone>UTC</timeZone>
+                </timestamp>
+                <pattern>
+                    <pattern>
+                        {
+                          "timestamp": "%date{yyyy-MM-dd'T'HH:mm:ss.SSSXXX}",
+                          "level": "%level",
+                          "service": "${springAppName:-unknown-service}",
+                          "traceId": "%mdc{traceId:-}",
+                          "spanId": "%mdc{spanId:-}",
+                          "thread": "%thread",
+                          "class": "%logger{40}",
+                          "message": "%message",
+                          "exception": "%exception"
+                        }
+                    </pattern>
+                </pattern>
+            </providers>
+        </encoder>
+    </appender>
+    
+    <!-- Standard Console Appender (for local development console readability) -->
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr([${springAppName:-unknown-service},%X{traceId:-},%X{spanId:-}]){yellow} %clr(%:-3f){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Use JSON console on production/Docker profile, standard console on default/dev profiles -->
+    <springProfile name="prod | docker">
+        <root level="INFO">
+            <appender-ref ref="jsonConsole"/>
+        </root>
+    </springProfile>
+    
+    <springProfile name="!prod &amp; !docker">
+        <root level="INFO">
+            <appender-ref ref="console"/>
+        </root>
+    </springProfile>
+</configuration>
