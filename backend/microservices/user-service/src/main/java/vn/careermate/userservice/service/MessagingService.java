@@ -15,6 +15,8 @@ import vn.careermate.userservice.model.User;
 import vn.careermate.userservice.repository.ConversationRepository;
 import vn.careermate.userservice.repository.MessageRepository;
 import vn.careermate.userservice.repository.UserRepository;
+import vn.careermate.userservice.config.ChatWebSocketHandler;
+import vn.careermate.userservice.dto.MessageWebSocketDTO;
 import vn.careermate.common.client.NotificationServiceClient;
 import vn.careermate.common.dto.NotificationRequest;
 
@@ -33,6 +35,7 @@ public class MessagingService {
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
     private final NotificationServiceClient notificationServiceClient;
+    private final ChatWebSocketHandler chatWebSocketHandler;
 
     @Transactional(readOnly = true)
     public User getCurrentUser() {
@@ -217,6 +220,22 @@ public class MessagingService {
             } catch (Exception e) {
                 log.error("Error sending message notification: {}", e.getMessage(), e);
             }
+        }
+
+        // Broadcast the message via WebSockets
+        try {
+            MessageWebSocketDTO wsDto = MessageWebSocketDTO.builder()
+                    .id(message.getId())
+                    .conversationId(conversationId)
+                    .senderId(currentUser.getId())
+                    .senderName(currentUser.getFullName())
+                    .content(content.trim())
+                    .createdAt(message.getCreatedAt() != null ? message.getCreatedAt().toString() : LocalDateTime.now().toString())
+                    .build();
+            log.info("Broadcasting message via WebSocket to conversationId: {}", conversationId);
+            chatWebSocketHandler.broadcastMessage(conversationId, wsDto);
+        } catch (Exception e) {
+            log.error("Failed to broadcast message via WebSocket: {}", e.getMessage(), e);
         }
 
         return message;

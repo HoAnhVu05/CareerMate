@@ -31,6 +31,12 @@ spring:
                 name: userServiceCircuitBreaker
                 fallbackUri: forward:/fallback/user-service
         
+        # User Service WebSocket
+        - id: user-service-ws
+          uri: lb:ws://user-service
+          predicates:
+            - Path=/ws/**
+        
         # Job Service
         - id: job-service
           uri: lb://job-service
