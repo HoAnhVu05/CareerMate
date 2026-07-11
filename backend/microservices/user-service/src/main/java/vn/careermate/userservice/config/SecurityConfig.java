@@ -43,7 +43,7 @@ public class SecurityConfig {
                 .requestMatchers(AntPathRequestMatcher.antMatcher("/api/setup/**")).permitAll()
                 .requestMatchers(AntPathRequestMatcher.antMatcher("/recruiters/experts")).permitAll()
                 .requestMatchers(AntPathRequestMatcher.antMatcher("/api/recruiters/experts")).permitAll()
-                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll().anyRequest().authenticated()
+                .requestMatchers(org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher("/v3/api-docs/**"), org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher("/v3/api-docs"), org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher("/swagger-ui/**"), org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher("/swagger-ui.html")).permitAll().anyRequest().authenticated()
             )
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)

@@ -28,7 +28,7 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/companies", "/companies/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/articles", "/articles/**").permitAll() // Allow all public read endpoints
-                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll().anyRequest().authenticated()
+                .requestMatchers(org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher("/v3/api-docs/**"), org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher("/v3/api-docs"), org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher("/swagger-ui/**"), org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher("/swagger-ui.html")).permitAll().anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
