@@ -237,12 +237,38 @@ public class ChallengeService {
         return participation;
     }
     
+    private boolean isNonsenseAnswer(String answer) {
+        if (answer == null || answer.trim().isEmpty()) {
+            return true;
+        }
+        String trimmed = answer.trim();
+        int length = trimmed.length();
+        if (length < 5) {
+            return true;
+        }
+        long uniqueChars = trimmed.chars().distinct().count();
+        if (length > 15 && uniqueChars < 5) {
+            return true;
+        }
+        if (java.util.regex.Pattern.compile("([a-zA-Z0-9])\\1{4,}").matcher(trimmed).find()) {
+            return true;
+        }
+        if (!trimmed.contains(" ") && length > 20) {
+            return true;
+        }
+        long spaceCount = trimmed.chars().filter(ch -> ch == ' ').count();
+        if (length > 40 && spaceCount <= 1) {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Auto-grade submission based on expected keywords
      * Simple keyword matching algorithm - can be enhanced with AI later
      */
     private Integer autoGradeSubmission(String answer, Challenge challenge) {
-        if (answer == null || answer.trim().isEmpty()) {
+        if (answer == null || answer.trim().isEmpty() || isNonsenseAnswer(answer)) {
             return 0;
         }
         
