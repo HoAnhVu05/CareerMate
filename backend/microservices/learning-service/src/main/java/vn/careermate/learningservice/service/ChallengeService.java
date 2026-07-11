@@ -260,6 +260,33 @@ public class ChallengeService {
         if (length > 40 && spaceCount <= 1) {
             return true;
         }
+        
+        String[] words = trimmed.split("\\s+");
+        for (String word : words) {
+            if (word.length() > 18 && !word.startsWith("http://") && !word.startsWith("https://")) {
+                return true;
+            }
+        }
+        
+        if (words.length > 3) {
+            double totalWordLength = 0;
+            for (String word : words) {
+                totalWordLength += word.length();
+            }
+            double avgWordLength = totalWordLength / words.length;
+            if (avgWordLength < 2.0) {
+                return true;
+            }
+        }
+        
+        if (words.length > 5) {
+            long uniqueWords = java.util.Arrays.stream(words).map(String::toLowerCase).distinct().count();
+            double uniqueRatio = (double) uniqueWords / words.length;
+            if (uniqueRatio < 0.3) {
+                return true;
+            }
+        }
+        
         return false;
     }
 

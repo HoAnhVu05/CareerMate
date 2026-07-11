@@ -248,7 +248,7 @@ services:
     image: careermate/ai-service:latest
     container_name: careermate-ai-service
 #    restart: unless-stopped
-    entrypoint: ["java", "-Xmx96m", "-Xms48m", "-Xss256k", "-XX:TieredStopAtLevel=1", "-XX:+UseSerialGC", "-jar", "app.jar"]
+    entrypoint: ["java", "-Xmx192m", "-Xms96m", "-Xss256k", "-XX:TieredStopAtLevel=1", "-XX:+UseSerialGC", "-jar", "app.jar"]
     environment:
       - SERVER_PORT=8086
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/careermate_db
