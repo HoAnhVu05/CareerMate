@@ -104,6 +104,51 @@ spring:
                 redis-rate-limiter.replenishRate: 5
                 redis-rate-limiter.burstCapacity: 10
                 key-resolver: "#{@ipKeyResolver}"
+
+        # Swagger Routes for Microservices
+        - id: user-service-swagger
+          uri: lb://user-service
+          predicates:
+            - Path=/api/user-service/v3/api-docs
+          filters:
+            - RewritePath=/api/user-service/v3/api-docs, /v3/api-docs
+        - id: job-service-swagger
+          uri: lb://job-service
+          predicates:
+            - Path=/api/job-service/v3/api-docs
+          filters:
+            - RewritePath=/api/job-service/v3/api-docs, /v3/api-docs
+        - id: content-service-swagger
+          uri: lb://content-service
+          predicates:
+            - Path=/api/content-service/v3/api-docs
+          filters:
+            - RewritePath=/api/content-service/v3/api-docs, /v3/api-docs
+        - id: learning-service-swagger
+          uri: lb://learning-service
+          predicates:
+            - Path=/api/learning-service/v3/api-docs
+          filters:
+            - RewritePath=/api/learning-service/v3/api-docs, /v3/api-docs
+        - id: admin-service-swagger
+          uri: lb://admin-service
+          predicates:
+            - Path=/api/admin-service/v3/api-docs
+          filters:
+            - RewritePath=/api/admin-service/v3/api-docs, /v3/api-docs
+        - id: notification-service-swagger
+          uri: lb://notification-service
+          predicates:
+            - Path=/api/notification-service/v3/api-docs
+          filters:
+            - RewritePath=/api/notification-service/v3/api-docs, /v3/api-docs
+        - id: ai-service-swagger
+          uri: lb://ai-service
+          predicates:
+            - Path=/api/ai-service/v3/api-docs
+          filters:
+            - RewritePath=/api/ai-service/v3/api-docs, /v3/api-docs
+
       # Disable Spring Cloud Gateway's default CORS handling
       globalcors:
         cors-configurations:
@@ -131,8 +176,18 @@ springdoc:
   swagger-ui:
     enabled: true
     path: /swagger-ui.html
-  gateway:
-    discovery:
-      enabled: true
-      locator:
-        enabled: true
+    urls:
+      - name: 1. User Service
+        url: /api/user-service/v3/api-docs
+      - name: 2. Job Service
+        url: /api/job-service/v3/api-docs
+      - name: 3. AI Service
+        url: /api/ai-service/v3/api-docs
+      - name: 4. Learning Service
+        url: /api/learning-service/v3/api-docs
+      - name: 5. Content Service
+        url: /api/content-service/v3/api-docs
+      - name: 6. Notification Service
+        url: /api/notification-service/v3/api-docs
+      - name: 7. Admin Service
+        url: /api/admin-service/v3/api-docs
