@@ -7,11 +7,13 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 @SpringBootApplication
 @EnableDiscoveryClient
 @EnableFeignClients(basePackages = "vn.careermate.common.client")
 @EnableJpaAuditing
+@EnableAsync
 @EntityScan("vn.careermate.notificationservice.model")
 @EnableJpaRepositories("vn.careermate.notificationservice.repository")
 public class NotificationServiceApplication {

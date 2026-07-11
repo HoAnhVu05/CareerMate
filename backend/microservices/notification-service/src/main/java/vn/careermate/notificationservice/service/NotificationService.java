@@ -22,6 +22,7 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final UserServiceClient userServiceClient; // Replaced UserRepository with Feign Client
+    private final EmailService emailService;
 
     @Transactional
     public Notification createNotification(UUID userId, String title, String message, 
@@ -38,7 +39,28 @@ public class NotificationService {
                 .relatedEntityId(relatedEntityId)
                 .build();
         
-        return notificationRepository.save(notification);
+        Notification saved = notificationRepository.save(notification);
+
+        // Send email asynchronously
+        try {
+            log.debug("Fetching user details for email notification: {}", userId);
+            UserDTO user = userServiceClient.getUserById(userId);
+            if (user != null && user.getEmail() != null) {
+                String emailBody = String.format(
+                    "Xin chào %s,\n\nBạn có một thông báo mới trên hệ thống CareerMate:\n\n* Tiêu đề: %s\n* Nội dung: %s\n\nBạn có thể truy cập hệ thống tại đây để xem chi tiết.",
+                    user.getFullName() != null ? user.getFullName() : user.getEmail(),
+                    title,
+                    message
+                );
+                emailService.sendEmail(user.getEmail(), title, emailBody);
+            } else {
+                log.warn("User {} has no email address, skipping email notification", userId);
+            }
+        } catch (Exception e) {
+            log.error("Failed to trigger email notification for user {}: {}", userId, e.getMessage());
+        }
+        
+        return saved;
     }
 
     @Transactional(readOnly = true)
