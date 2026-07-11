@@ -824,7 +824,7 @@ public class AIService {
      * Check if a message is career-related using a keyword blacklist.
      * This runs ENTIRELY in Java (no API call) – instant and never times out.
      */
-    private boolean isCareerRelated(String message) {
+    boolean isCareerRelated(String message) {
         if (message == null || message.trim().isEmpty()) return false;
         String lower = message.toLowerCase().trim();
 
