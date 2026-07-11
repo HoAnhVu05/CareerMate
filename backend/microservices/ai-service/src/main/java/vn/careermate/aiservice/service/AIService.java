@@ -627,6 +627,44 @@ public class AIService {
         return steps;
     }
 
+    public Map<String, Object> evaluateChallenge(String title, String description, String instructions, String expectedKeywords, String answer) {
+        try {
+            String prompt = "Bạn là trợ lý AI chuyên nghiệp đánh giá bài nộp thử thách của học viên.\n" +
+                    "Thông tin thử thách:\n" +
+                    "- Tiêu đề: " + title + "\n" +
+                    "- Mô tả: " + description + "\n" +
+                    "- Hướng dẫn yêu cầu: " + instructions + "\n" +
+                    "- Các từ khóa/nội dung mong đợi: " + expectedKeywords + "\n\n" +
+                    "Bài làm của học viên:\n" +
+                    "\"\"\"\n" +
+                    answer + "\n" +
+                    "\"\"\"\n\n" +
+                    "Nhiệm vụ của bạn:\n" +
+                    "1. Phân tích nội dung bài làm của học viên.\n" +
+                    "2. Kiểm tra xem bài làm có phải là chuỗi ký tự rác vô nghĩa (keyboard mashing, ví dụ: 'qwerty...', 'asdfgh...', 'hiikkk...', hoặc các chữ cái ngẫu nhiên ghép lại không có nghĩa), spam, hoàn toàn không liên quan, hoặc quá ngắn/sơ sài (dưới 5 từ) hay không. Nếu ĐÚNG, điểm số bắt buộc phải là 0.\n" +
+                    "3. Nếu bài làm nghiêm túc và có nội dung liên quan đến thử thách, hãy đánh giá mức độ hoàn thành dựa trên Hướng dẫn và Nội dung mong đợi để cho điểm từ 1 đến 100.\n" +
+                    "4. Trả về kết quả dưới định dạng JSON duy nhất, có cấu trúc như sau:\n" +
+                    "{\n" +
+                    "  \"score\": <điểm số từ 0 đến 100>,\n" +
+                    "  \"feedback\": \"<Nhận xét chi tiết bằng tiếng Việt về ưu điểm, khuyết điểm và gợi ý cải thiện>\"\n" +
+                    "}\n\n" +
+                    "Chú ý: Chỉ trả về chuỗi JSON thô, không kèm markdown, không viết ```json ... ```.";
+
+            String response = callAIAPI(prompt);
+            log.info("AI Challenge Evaluation Raw Response: {}", response);
+            
+            String cleanedResponse = response.trim();
+            if (cleanedResponse.startsWith("```")) {
+                cleanedResponse = cleanedResponse.replaceAll("^```json\\s*", "").replaceAll("```$", "").trim();
+            }
+            
+            return objectMapper.readValue(cleanedResponse, new TypeReference<Map<String, Object>>() {});
+        } catch (Exception e) {
+            log.error("Error evaluating challenge with AI", e);
+            return Map.of("score", 0, "feedback", "Không thể đánh giá bài làm bằng AI do lỗi hệ thống.");
+        }
+    }
+
     /**
      * Call AI API - routes to appropriate provider (Gemini or OpenRouter)
      */

@@ -12,6 +12,9 @@ import java.util.UUID;
 public interface AIServiceClient {
     @PostMapping("/ai/cv/analyze/{cvId}")
     java.util.Map<String, Object> analyzeCV(@PathVariable("cvId") UUID cvId, @RequestBody java.util.Map<String, String> request);
+
+    @PostMapping("/ai/challenges/evaluate")
+    java.util.Map<String, Object> evaluateChallenge(@RequestBody java.util.Map<String, Object> request);
     
     @GetMapping("/ai/job-recommendations/{studentId}")
     List<JobRecommendationDTO> getJobRecommendations(@PathVariable UUID studentId);

@@ -33,6 +33,24 @@ public class AIController {
     private final UserServiceClient userServiceClient;
     private final JobServiceClient jobServiceClient;
 
+    @PostMapping("/challenges/evaluate")
+    public ResponseEntity<Map<String, Object>> evaluateChallenge(
+            @RequestBody Map<String, Object> request) {
+        try {
+            String title = (String) request.get("title");
+            String description = (String) request.get("description");
+            String instructions = (String) request.get("instructions");
+            String expectedKeywords = (String) request.get("expectedKeywords");
+            String answer = (String) request.get("answer");
+            
+            Map<String, Object> result = aiService.evaluateChallenge(title, description, instructions, expectedKeywords, answer);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("Error in evaluateChallenge controller", e);
+            return ResponseEntity.status(500).body(Map.of("score", 0, "error", e.getMessage()));
+        }
+    }
+
     /**
      * Analyze CV
      * POST /ai/cv/analyze/{cvId}

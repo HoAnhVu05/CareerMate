@@ -17,6 +17,7 @@ import vn.careermate.learningservice.repository.StudentBadgeRepository;
 import vn.careermate.common.client.UserServiceClient;
 import vn.careermate.common.dto.StudentProfileDTO;
 import vn.careermate.common.dto.UserDTO;
+import vn.careermate.common.client.AIServiceClient;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,6 +34,7 @@ public class ChallengeService {
     private final StudentBadgeRepository studentBadgeRepository;
     private final BadgeRepository badgeRepository;
     private final UserServiceClient userServiceClient;
+    private final AIServiceClient aiServiceClient;
 
     public List<Challenge> getAvailableChallenges(String category) {
         try {
@@ -149,7 +151,33 @@ public class ChallengeService {
         participation.setSubmittedAt(LocalDateTime.now());
         
         // Auto-grade the submission
-        Integer score = autoGradeSubmission(answer, challenge);
+        Integer score = 0;
+        try {
+            log.info("Calling AI Service to evaluate submission for challenge {}", challengeId);
+            java.util.Map<String, Object> aiRequest = java.util.Map.of(
+                "title", challenge.getTitle() != null ? challenge.getTitle() : "",
+                "description", challenge.getDescription() != null ? challenge.getDescription() : "",
+                "instructions", challenge.getInstructions() != null ? challenge.getInstructions() : "",
+                "expectedKeywords", challenge.getExpectedKeywords() != null ? challenge.getExpectedKeywords() : "",
+                "answer", answer
+            );
+            java.util.Map<String, Object> aiResponse = aiServiceClient.evaluateChallenge(aiRequest);
+            if (aiResponse != null && aiResponse.containsKey("score")) {
+                Object scoreObj = aiResponse.get("score");
+                if (scoreObj instanceof Number) {
+                    score = ((Number) scoreObj).intValue();
+                } else if (scoreObj instanceof String) {
+                    score = Integer.parseInt((String) scoreObj);
+                }
+                log.info("AI evaluation succeeded. Score: {}", score);
+            } else {
+                log.warn("AI response is empty or missing score, using fallback grading");
+                score = autoGradeSubmission(answer, challenge);
+            }
+        } catch (Exception e) {
+            log.error("AI evaluation failed, using fallback local grading: {}", e.getMessage());
+            score = autoGradeSubmission(answer, challenge);
+        }
         participation.setScore(score);
         log.info("Submission scored: {} points for challenge {}", score, challengeId);
         
