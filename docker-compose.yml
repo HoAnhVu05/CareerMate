@@ -91,6 +91,7 @@ services:
       - "8080:8080"
     environment:
       - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
+      - SPRING_PROFILES_ACTIVE=prod
     depends_on:
       eureka-server:
         condition: service_healthy
@@ -111,6 +112,7 @@ services:
 #    restart: unless-stopped
     entrypoint: ["java", "-Xmx112m", "-Xms56m", "-Xss256k", "-XX:TieredStopAtLevel=1", "-XX:+UseSerialGC", "-jar", "app.jar"]
     environment:
+      - SPRING_PROFILES_ACTIVE=prod
       - SERVER_PORT=8081
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/careermate_db
       - DB_USERNAME=${DB_USERNAME:-postgres}
@@ -145,6 +147,7 @@ services:
 #    restart: unless-stopped
     entrypoint: ["java", "-Xmx80m", "-Xms40m", "-Xss256k", "-XX:TieredStopAtLevel=1", "-XX:+UseSerialGC", "-jar", "app.jar"]
     environment:
+      - SPRING_PROFILES_ACTIVE=prod
       - SERVER_PORT=8082
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/careermate_db
       - DB_USERNAME=${DB_USERNAME:-postgres}
@@ -170,6 +173,7 @@ services:
 #    restart: unless-stopped
     entrypoint: ["java", "-Xmx64m", "-Xms32m", "-Xss256k", "-XX:TieredStopAtLevel=1", "-XX:+UseSerialGC", "-jar", "app.jar"]
     environment:
+      - SPRING_PROFILES_ACTIVE=prod
       - SERVER_PORT=8083
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/careermate_db
       - DB_USERNAME=${DB_USERNAME:-postgres}
@@ -198,6 +202,7 @@ services:
 #    restart: unless-stopped
     entrypoint: ["java", "-Xmx64m", "-Xms32m", "-Xss256k", "-XX:TieredStopAtLevel=1", "-XX:+UseSerialGC", "-jar", "app.jar"]
     environment:
+      - SPRING_PROFILES_ACTIVE=prod
       - SERVER_PORT=8084
       - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/careermate_db
@@ -225,6 +230,7 @@ services:
 #    restart: unless-stopped
     entrypoint: ["java", "-Xmx64m", "-Xms32m", "-Xss256k", "-XX:TieredStopAtLevel=1", "-XX:+UseSerialGC", "-jar", "app.jar"]
     environment:
+      - SPRING_PROFILES_ACTIVE=prod
       - SERVER_PORT=8085
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/careermate_db
       - DB_USERNAME=${DB_USERNAME:-postgres}
@@ -250,6 +256,7 @@ services:
 #    restart: unless-stopped
     entrypoint: ["java", "-Xmx192m", "-Xms96m", "-Xss256k", "-XX:TieredStopAtLevel=1", "-XX:+UseSerialGC", "-jar", "app.jar"]
     environment:
+      - SPRING_PROFILES_ACTIVE=prod
       - SERVER_PORT=8086
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/careermate_db
       - DB_USERNAME=${DB_USERNAME:-postgres}
@@ -277,6 +284,7 @@ services:
 #    restart: unless-stopped
     entrypoint: ["java", "-Xmx64m", "-Xms32m", "-Xss256k", "-XX:TieredStopAtLevel=1", "-XX:+UseSerialGC", "-jar", "app.jar"]
     environment:
+      - SPRING_PROFILES_ACTIVE=prod
       - SERVER_PORT=8087
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/careermate_db
       - DB_USERNAME=${DB_USERNAME:-postgres}
