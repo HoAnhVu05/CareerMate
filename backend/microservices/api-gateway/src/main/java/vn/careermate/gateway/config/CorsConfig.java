@@ -20,7 +20,9 @@ public class CorsConfig {
         corsConfig.setAllowedOriginPatterns(Arrays.asList(
             "http://localhost:5173",
             "http://localhost:3000",
-            "http://localhost:80"
+            "http://localhost:80",
+            "http://careermate.duckdns.org",
+            "https://careermate.duckdns.org"
         ));
         
         corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
