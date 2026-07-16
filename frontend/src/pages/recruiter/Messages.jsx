@@ -438,7 +438,7 @@ export default function Messages() {
       <div className="flex-1 bg-white/60 dark:bg-gray-800/40 backdrop-blur-2xl rounded-3xl shadow-2xl overflow-hidden border border-white/20 dark:border-white/5 flex flex-col md:flex-row">
 
         {/* Conversations List - Left Side */}
-        <div className={`${selectedConversation ? 'hidden md:flex' : 'flex'} w-full md:w-[350px] lg:w-[400px] border-r border-gray-100 dark:border-gray-700/50 flex flex-col bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm`}>
+        <div className="w-full md:w-[350px] lg:w-[400px] border-r border-gray-100 dark:border-gray-700/50 flex flex-col bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
           {/* Header */}
           <div className="p-6 border-b border-gray-100 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-gray-800 dark:to-gray-800">
             <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent flex items-center gap-3 mb-4">
@@ -619,7 +619,7 @@ export default function Messages() {
         </div>
 
         {/* Messages - Right Side */}
-        <div className={`${!selectedConversation ? 'hidden md:flex' : 'flex'} flex-1 flex-col bg-white/30 dark:bg-gray-900/30 backdrop-blur-xl relative`}>
+        <div className="flex-1 flex flex-col bg-white/30 dark:bg-gray-900/30 backdrop-blur-xl relative">
           {/* Decorative background */}
           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 pointer-events-none"></div>
 
@@ -637,62 +637,53 @@ export default function Messages() {
             <>
               {/* Messages Header */}
               <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700/50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md flex items-center justify-between sticky top-0 z-20">
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => setSelectedConversation(null)}
-                    className="md:hidden mr-2 p-2 -ml-2 text-gray-600 dark:text-gray-300"
-                    title="Quay lại"
-                  >
-                    <i className="fas fa-chevron-left"></i>
-                  </button>
-                  {(() => {
-                    const otherUser = getOtherUser(selectedConversation);
-                    if (!otherUser) return null;
-                    const avatarUrl = getAvatarUrl(otherUser.avatarUrl);
-                    return (
-                      <div className="flex items-center gap-4">
-                        <div className="relative">
-                          {avatarUrl ? (
-                            <img
-                              src={avatarUrl}
-                              alt={otherUser.fullName}
-                              className="w-12 h-12 rounded-full object-cover border-2 border-white dark:border-gray-700 shadow-md cursor-pointer hover:scale-105 transition-transform"
-                              onClick={handleViewProfile}
-                              onError={(e) => {
-                                e.target.style.display = 'none';
-                                e.target.nextSibling.style.display = 'flex';
-                              }}
-                            />
-                          ) : null}
-                          <div
-                            className={`w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-md cursor-pointer hover:scale-105 transition-transform ${avatarUrl ? 'hidden' : ''}`}
+                {(() => {
+                  const otherUser = getOtherUser(selectedConversation);
+                  if (!otherUser) return null;
+                  const avatarUrl = getAvatarUrl(otherUser.avatarUrl);
+                  return (
+                    <div className="flex items-center gap-4">
+                      <div className="relative">
+                        {avatarUrl ? (
+                          <img
+                            src={avatarUrl}
+                            alt={otherUser.fullName}
+                            className="w-12 h-12 rounded-full object-cover border-2 border-white dark:border-gray-700 shadow-md cursor-pointer hover:scale-105 transition-transform"
                             onClick={handleViewProfile}
-                          >
-                            {otherUser.fullName?.charAt(0).toUpperCase() || 'U'}
-                          </div>
-                          <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full"></div>
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                              e.target.nextSibling.style.display = 'flex';
+                            }}
+                          />
+                        ) : null}
+                        <div
+                          className={`w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-md cursor-pointer hover:scale-105 transition-transform ${avatarUrl ? 'hidden' : ''}`}
+                          onClick={handleViewProfile}
+                        >
+                          {otherUser.fullName?.charAt(0).toUpperCase() || 'U'}
                         </div>
+                        <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full"></div>
+                      </div>
 
-                        <div>
-                          <h3 className="font-bold text-gray-900 dark:text-white text-lg leading-tight hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors" onClick={handleViewProfile}>
-                            {otherUser.fullName}
-                          </h3>
-                          <div className="flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400">
-                            <span className="bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded text-gray-600 dark:text-gray-300">
-                              {otherUser.role === 'STUDENT' ? 'Sinh viên' : 'Nhà tuyển dụng'}
-                            </span>
-                            {selectedConversation.jobTitle && (
-                              <>
-                                <span>•</span>
-                                <span className="text-blue-600 dark:text-blue-400">{selectedConversation.jobTitle}</span>
-                              </>
-                            )}
-                          </div>
+                      <div>
+                        <h3 className="font-bold text-gray-900 dark:text-white text-lg leading-tight hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors" onClick={handleViewProfile}>
+                          {otherUser.fullName}
+                        </h3>
+                        <div className="flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400">
+                          <span className="bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded text-gray-600 dark:text-gray-300">
+                            {otherUser.role === 'STUDENT' ? 'Sinh viên' : 'Nhà tuyển dụng'}
+                          </span>
+                          {selectedConversation.jobTitle && (
+                            <>
+                              <span>•</span>
+                              <span className="text-blue-600 dark:text-blue-400">{selectedConversation.jobTitle}</span>
+                            </>
+                          )}
                         </div>
                       </div>
-                    );
-                  })()}
-                </div>
+                    </div>
+                  );
+                })()}
 
                 <div className="relative" ref={menuRef}>
                   <button
