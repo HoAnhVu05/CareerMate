@@ -20,6 +20,8 @@ import vn.careermate.common.dto.UserDTO;
 import vn.careermate.common.client.AIServiceClient;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -148,10 +150,13 @@ public class ChallengeService {
         // Update submission
         participation.setAnswer(answer);
         participation.setAttachmentUrl(attachmentUrl);
-        participation.setSubmittedAt(LocalDateTime.now());
+        // Use Vietnam timezone (Asia/Ho_Chi_Minh) for correct local timestamps
+        LocalDateTime nowVN = ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")).toLocalDateTime();
+        participation.setSubmittedAt(nowVN);
         
         // Auto-grade the submission
         Integer score = 0;
+        String aiFeedback = null;
         try {
             log.info("Calling AI Service to evaluate submission for challenge {}", challengeId);
             java.util.Map<String, Object> aiRequest = java.util.Map.of(
@@ -169,16 +174,23 @@ public class ChallengeService {
                 } else if (scoreObj instanceof String) {
                     score = Integer.parseInt((String) scoreObj);
                 }
-                log.info("AI evaluation succeeded. Score: {}", score);
+                // Extract feedback from AI response
+                if (aiResponse.containsKey("feedback") && aiResponse.get("feedback") != null) {
+                    aiFeedback = aiResponse.get("feedback").toString();
+                }
+                log.info("AI evaluation succeeded. Score: {}, Feedback: {}", score, aiFeedback);
             } else {
                 log.warn("AI response is empty or missing score, using fallback grading");
                 score = autoGradeSubmission(answer, challenge);
+                aiFeedback = "Bài làm đã được chấm theo tiêu chí cơ bản. Hệ thống AI tạm thời không khả dụng.";
             }
         } catch (Exception e) {
             log.error("AI evaluation failed, using fallback local grading: {}", e.getMessage());
             score = autoGradeSubmission(answer, challenge);
+            aiFeedback = "Bài làm đã được chấm theo tiêu chí cơ bản. Hệ thống AI tạm thời không khả dụng.";
         }
         participation.setScore(score);
+        participation.setFeedback(aiFeedback);
         log.info("Submission scored: {} points for challenge {}", score, challengeId);
         
         // Get passing score (default 70 if not set)
@@ -189,7 +201,9 @@ public class ChallengeService {
         // If score meets passing requirement, automatically complete and award badge
         if (score >= passingScore) {
             participation.setStatus(ChallengeParticipation.ParticipationStatus.COMPLETED);
-            participation.setCompletedAt(LocalDateTime.now());
+            LocalDateTime completedAtVN = ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")).toLocalDateTime();
+            participation.setCompletedAt(completedAtVN);
+
             log.info("Challenge completed! Score: {}, Passing: {}, Status set to COMPLETED", score, passingScore);
             
             // Award badge if challenge has one

@@ -646,63 +646,108 @@ public class DataInitializer {
         List<Challenge> challenges = Arrays.asList(
             Challenge.builder()
                 .title("Viết CV chuyên nghiệp")
-                .description("Tạo một CV hoàn chỉnh và chuyên nghiệp với đầy đủ thông tin cá nhân, học vấn, kinh nghiệm và kỹ năng")
+                .description("Thử thách này yêu cầu bạn trình bày nội dung CV của bản thân một cách chuyên nghiệp và đầy đủ thông tin.")
                 .category("CV")
                 .difficulty("EASY")
                 .badgeId(cvBadge != null ? cvBadge.getId() : null)
-                .startDate(null) // Always active
-                .endDate(null) // Always active
+                .startDate(null)
+                .endDate(null)
                 .passingScore(70)
-                .instructions("1. Tạo CV mới trên hệ thống\n2. Điền đầy đủ thông tin cá nhân\n3. Thêm ít nhất 2 kinh nghiệm làm việc hoặc dự án\n4. Liệt kê ít nhất 5 kỹ năng\n5. Upload CV đã hoàn thành")
-                .expectedKeywords("CV, thông tin cá nhân, kinh nghiệm, kỹ năng, học vấn")
+                .instructions("<h3>📋 Yêu cầu thử thách</h3>" +
+                    "<p>Trong ô bài làm phía dưới, hãy <strong>viết nội dung CV của bạn bằng văn bản thuần</strong> (không cần upload file). Bài làm cần bao gồm đầy đủ các mục sau:</p>" +
+                    "<ul>" +
+                    "<li><strong>Thông tin cá nhân:</strong> Họ tên, email, số điện thoại, địa chỉ</li>" +
+                    "<li><strong>Mục tiêu nghề nghiệp:</strong> Viết 2-3 câu mô tả mục tiêu nghề nghiệp của bạn</li>" +
+                    "<li><strong>Học vấn:</strong> Tên trường, chuyên ngành, năm tốt nghiệp (dự kiến)</li>" +
+                    "<li><strong>Kinh nghiệm/Dự án:</strong> Ít nhất 2 kinh nghiệm làm việc hoặc dự án nổi bật, bao gồm tên dự án, mô tả ngắn và kết quả đạt được</li>" +
+                    "<li><strong>Kỹ năng:</strong> Liệt kê ít nhất 5 kỹ năng kỹ thuật hoặc kỹ năng mềm của bạn</li>" +
+                    "</ul>" +
+                    "<p><strong>💡 Ví dụ định dạng gợi ý:</strong></p>" +
+                    "<pre>HỌ TÊN: Nguyễn Văn A\nEMAIL: vana@gmail.com\nSĐT: 0901234567\n\nMỤC TIÊU: Tôi là sinh viên CNTT năm 3 muốn ứng tuyển vị trí...\n\nHỌC VẤN: Đại học XYZ - Công nghệ thông tin (2022-2026)\n\nDỰ ÁN:\n1. Dự án A - Mô tả: ...  Kết quả: ...\n2. Dự án B - Mô tả: ...  Kết quả: ...\n\nKỸ NĂNG: Java, Python, SQL, Git, Giao tiếp tiếng Anh</pre>")
+                .expectedKeywords("thông tin cá nhân, học vấn, kinh nghiệm, kỹ năng, dự án, mục tiêu")
                 .build(),
             Challenge.builder()
                 .title("Chuẩn bị phỏng vấn")
-                .description("Hoàn thành bài test phỏng vấn và đạt điểm trên 80%")
+                .description("Thử thách này giúp bạn luyện tập trả lời các câu hỏi phỏng vấn xin việc phổ biến.")
                 .category("INTERVIEW")
                 .difficulty("MEDIUM")
                 .badgeId(interviewBadge != null ? interviewBadge.getId() : null)
                 .startDate(null)
                 .endDate(null)
-                .passingScore(80)
-                .instructions("1. Tham gia bài test phỏng vấn\n2. Trả lời ít nhất 10 câu hỏi\n3. Đạt điểm tối thiểu 80%\n4. Nộp kết quả")
-                .expectedKeywords("phỏng vấn, câu hỏi, trả lời, điểm số")
+                .passingScore(70)
+                .instructions("<h3>🎤 Yêu cầu thử thách</h3>" +
+                    "<p>Trong ô bài làm, hãy <strong>trả lời đầy đủ 5 câu hỏi phỏng vấn phổ biến</strong> dưới đây bằng tiếng Việt. Mỗi câu hỏi hãy trả lời ít nhất 3-5 câu:</p>" +
+                    "<ol>" +
+                    "<li><strong>Hãy giới thiệu về bản thân bạn?</strong></li>" +
+                    "<li><strong>Điểm mạnh và điểm yếu của bạn là gì?</strong></li>" +
+                    "<li><strong>Tại sao bạn muốn ứng tuyển vào vị trí này?</strong> (tự chọn vị trí bạn muốn)</li>" +
+                    "<li><strong>Bạn thấy mình ở đâu sau 3-5 năm nữa?</strong></li>" +
+                    "<li><strong>Bạn xử lý áp lực và deadline như thế nào? Hãy cho một ví dụ cụ thể.</strong></li>" +
+                    "</ol>" +
+                    "<p><strong>💡 Gợi ý:</strong> Sử dụng phương pháp STAR (Tình huống - Nhiệm vụ - Hành động - Kết quả) để trả lời các câu hỏi về kinh nghiệm.</p>")
+                .expectedKeywords("giới thiệu, điểm mạnh, điểm yếu, mục tiêu, kinh nghiệm, phỏng vấn, kỹ năng")
                 .build(),
             Challenge.builder()
                 .title("Lập kế hoạch sự nghiệp")
-                .description("Tạo roadmap sự nghiệp 5 năm với các mục tiêu cụ thể và kế hoạch hành động")
+                .description("Thử thách yêu cầu bạn xây dựng một lộ trình phát triển sự nghiệp cụ thể trong 5 năm tới.")
                 .category("CAREER")
                 .difficulty("MEDIUM")
                 .badgeId(careerBadge != null ? careerBadge.getId() : null)
                 .startDate(null)
                 .endDate(null)
                 .passingScore(70)
-                .instructions("1. Xác định mục tiêu sự nghiệp\n2. Vạch ra roadmap 5 năm\n3. Liệt kê các kỹ năng cần phát triển\n4. Đề xuất các bước hành động cụ thể\n5. Nộp bản kế hoạch")
-                .expectedKeywords("kế hoạch, mục tiêu, roadmap, sự nghiệp, phát triển")
+                .instructions("<h3>🗺️ Yêu cầu thử thách</h3>" +
+                    "<p>Trong ô bài làm, hãy <strong>viết một kế hoạch sự nghiệp cá nhân 5 năm</strong> với các nội dung sau:</p>" +
+                    "<ul>" +
+                    "<li><strong>Nghề nghiệp/Lĩnh vực bạn chọn:</strong> Bạn muốn làm gì trong tương lai? (ví dụ: Backend Developer, Data Analyst, Product Manager...)</li>" +
+                    "<li><strong>Mục tiêu ngắn hạn (Năm 1-2):</strong> Bạn cần học/làm gì trong 1-2 năm đầu? (ví dụ: tốt nghiệp, học thêm kỹ năng X, đi thực tập...)</li>" +
+                    "<li><strong>Mục tiêu trung hạn (Năm 3-4):</strong> Bạn muốn đạt vị trí gì? Mức lương mong muốn là bao nhiêu?</li>" +
+                    "<li><strong>Mục tiêu dài hạn (Năm 5+):</strong> Bạn muốn trở thành gì? (Tech Lead, Manager, khởi nghiệp...)</li>" +
+                    "<li><strong>Kỹ năng cần phát triển:</strong> Liệt kê 3-5 kỹ năng cụ thể bạn cần học để đạt mục tiêu</li>" +
+                    "<li><strong>Hành động cụ thể trong 3 tháng tới:</strong> Bạn sẽ bắt đầu từ đâu?</li>" +
+                    "</ul>" +
+                    "<p><strong>💡 Lưu ý:</strong> Viết cụ thể và thực tế dựa trên bản thân bạn. Kế hoạch không cần hoàn hảo nhưng phải có suy nghĩ thực sự.</p>")
+                .expectedKeywords("kế hoạch, mục tiêu, sự nghiệp, lộ trình, phát triển, kỹ năng, năm")
                 .build(),
             Challenge.builder()
                 .title("Nâng cao kỹ năng kỹ thuật")
-                .description("Hoàn thành ít nhất 3 khóa học kỹ thuật và đạt chứng chỉ")
+                .description("Thử thách yêu cầu bạn trình bày hành trình tự học và phát triển kỹ năng kỹ thuật của bản thân.")
                 .category("SKILL")
                 .difficulty("HARD")
                 .badgeId(skillBadge != null ? skillBadge.getId() : null)
                 .startDate(null)
                 .endDate(null)
-                .passingScore(75)
-                .instructions("1. Đăng ký ít nhất 3 khóa học kỹ thuật\n2. Hoàn thành tất cả bài học\n3. Đạt điểm trung bình trên 75%\n4. Nhận chứng chỉ hoàn thành")
-                .expectedKeywords("khóa học, kỹ năng kỹ thuật, chứng chỉ, hoàn thành")
+                .passingScore(70)
+                .instructions("<h3>💻 Yêu cầu thử thách</h3>" +
+                    "<p>Trong ô bài làm, hãy <strong>viết một bài tự đánh giá về kỹ năng kỹ thuật</strong> của bạn theo các mục:</p>" +
+                    "<ol>" +
+                    "<li><strong>Kỹ năng hiện tại:</strong> Liệt kê các ngôn ngữ lập trình, framework, công cụ bạn đang biết và tự đánh giá mức độ (Beginner/Intermediate/Advanced)</li>" +
+                    "<li><strong>Dự án/Sản phẩm đã làm:</strong> Mô tả ít nhất 1 dự án kỹ thuật bạn đã tự làm hoặc tham gia - bao gồm công nghệ sử dụng và bạn học được gì</li>" +
+                    "<li><strong>Khóa học/Tài liệu đã học:</strong> Bạn đã tự học từ đâu? (Udemy, YouTube, sách, documentation...)</li>" +
+                    "<li><strong>Kỹ năng cần cải thiện:</strong> Bạn nhận thấy mình còn yếu kỹ năng gì? Kế hoạch cải thiện cụ thể là gì?</li>" +
+                    "<li><strong>Bằng chứng/Portfolio:</strong> Bạn có GitHub, link demo, chứng chỉ hoặc bằng chứng nào về kỹ năng không? (Paste link vào bài nếu có)</li>" +
+                    "</ol>")
+                .expectedKeywords("kỹ năng, lập trình, dự án, framework, học, ngôn ngữ, công cụ, portfolio")
                 .build(),
             Challenge.builder()
                 .title("Xây dựng mạng lưới nghề nghiệp")
-                .description("Kết nối với ít nhất 10 người trong ngành và tham gia 2 sự kiện networking")
+                .description("Thử thách giúp bạn suy nghĩ về cách xây dựng và phát triển mạng lưới kết nối nghề nghiệp.")
                 .category("CAREER")
                 .difficulty("EASY")
                 .badgeId(careerBadge != null ? careerBadge.getId() : null)
                 .startDate(null)
                 .endDate(null)
                 .passingScore(70)
-                .instructions("1. Kết nối với ít nhất 10 người trong ngành\n2. Tham gia 2 sự kiện networking\n3. Chia sẻ kinh nghiệm trên diễn đàn\n4. Nộp bằng chứng kết nối")
-                .expectedKeywords("networking, kết nối, mạng lưới, sự kiện")
+                .instructions("<h3>🤝 Yêu cầu thử thách</h3>" +
+                    "<p>Trong ô bài làm, hãy <strong>trả lời các câu hỏi sau</strong> về việc xây dựng mạng lưới nghề nghiệp (networking):</p>" +
+                    "<ol>" +
+                    "<li><strong>Bạn hiểu \"networking\" trong nghề nghiệp là gì?</strong> Tại sao nó quan trọng với sinh viên mới ra trường?</li>" +
+                    "<li><strong>Bạn đã kết nối với ai trong ngành chưa?</strong> Nếu có, hãy mô tả (không cần nêu tên, ví dụ: 1 anh senior tại công ty X tôi gặp ở sự kiện Y). Nếu chưa, bạn sẽ bắt đầu từ đâu?</li>" +
+                    "<li><strong>Bạn sẽ làm gì để tạo ấn tượng tốt khi gặp người trong ngành lần đầu?</strong> (Ví dụ: câu hỏi hay hỏi, cách giới thiệu bản thân...)</li>" +
+                    "<li><strong>Lập kế hoạch networking trong 1 tháng tới:</strong> Bạn sẽ tham gia sự kiện nào? Kết nối trên LinkedIn không? Tham gia cộng đồng nào?</li>" +
+                    "</ol>" +
+                    "<p><strong>💡 Lưu ý:</strong> Đây là bài tự luận về nhận thức và kế hoạch, không cần nộp file hay bằng chứng thực tế.</p>")
+                .expectedKeywords("networking, kết nối, mạng lưới, sự kiện, LinkedIn, cộng đồng, nghề nghiệp")
                 .build()
         );
 

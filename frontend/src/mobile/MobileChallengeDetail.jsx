@@ -90,10 +90,20 @@ export default function MobileChallengeDetail() {
                         <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Bài làm của bạn</h3>
                     </div>
                     {participation?.status === 'COMPLETED' ? (
-                        <div className="bg-emerald-50 dark:bg-emerald-900/10 p-8 rounded-[2.5rem] border border-emerald-100 text-center">
-                            <div className="w-16 h-16 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center text-3xl text-emerald-500 shadow-sm mx-auto mb-4"><i className="fas fa-check-circle"></i></div>
-                            <h4 className="text-xs font-black uppercase text-emerald-600 mb-2">Thử thách đã hoàn thành!</h4>
-                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Điểm số: {participation.score}/100</p>
+                        <div className="bg-emerald-50 dark:bg-emerald-900/10 p-8 rounded-[2.5rem] border border-emerald-100 space-y-4">
+                            <div className="text-center">
+                                <div className="w-16 h-16 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center text-3xl text-emerald-500 shadow-sm mx-auto mb-4"><i className="fas fa-check-circle"></i></div>
+                                <h4 className="text-xs font-black uppercase text-emerald-600 mb-2">Thử thách đã hoàn thành!</h4>
+                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Điểm số: {participation.score}/100</p>
+                            </div>
+                            {participation.feedback && (
+                                <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-emerald-100 dark:border-slate-800">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600 mb-2 flex items-center gap-1">
+                                        <i className="fas fa-robot"></i> Nhận xét AI
+                                    </p>
+                                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">{participation.feedback}</p>
+                                </div>
+                            )}
                         </div>
                     ) : (
                         <form onSubmit={handleSubmit} className="space-y-6">

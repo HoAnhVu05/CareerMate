@@ -57,6 +57,9 @@ public class ChallengeParticipation {
     @Column(name = "score")
     private Integer score; // Score out of 100
 
+    @Column(name = "feedback", columnDefinition = "TEXT")
+    private String feedback; // AI feedback in Vietnamese
+
     public enum ParticipationStatus {
         IN_PROGRESS, COMPLETED, FAILED
     }

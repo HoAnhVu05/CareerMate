@@ -256,20 +256,40 @@ export default function ChallengeDetail() {
             {participation.score !== null && participation.score !== undefined && (
               <p>
                 <span className="font-semibold">Điểm số: </span>
-                <span className={`font-bold ${participation.score >= 70 ? 'text-green-600' : 'text-red-600'}`}>
+                <span className={`font-bold text-lg ${participation.score >= 70 ? 'text-green-600' : 'text-red-600'}`}>
                   {participation.score}/100
                 </span>
               </p>
             )}
             {participation.submittedAt && (
               <p className="text-sm text-gray-600">
-                Nộp lúc: {new Date(participation.submittedAt).toLocaleString('vi-VN')}
+                Nộp lúc: {new Date(participation.submittedAt + '+07:00').toLocaleString('vi-VN')}
               </p>
             )}
+
+            {/* AI Feedback */}
+            {participation.feedback && (
+              <div className={`mt-4 p-4 rounded-lg border-l-4 ${
+                participation.score >= 70
+                  ? 'bg-green-50 border-green-400 dark:bg-green-900/20 dark:border-green-500'
+                  : 'bg-orange-50 border-orange-400 dark:bg-orange-900/20 dark:border-orange-500'
+              }`}>
+                <p className={`font-semibold mb-2 flex items-center gap-2 ${
+                  participation.score >= 70 ? 'text-green-700 dark:text-green-400' : 'text-orange-700 dark:text-orange-400'
+                }`}>
+                  <i className="fas fa-robot"></i>
+                  Nhận xét của AI:
+                </p>
+                <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
+                  {participation.feedback}
+                </p>
+              </div>
+            )}
+
             {participation.answer && (
               <div className="mt-4">
                 <p className="font-semibold mb-2">Bài làm của bạn:</p>
-                <div className="bg-gray-50 p-4 rounded border">
+                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded border dark:border-gray-700">
                   <p className="whitespace-pre-wrap">{participation.answer}</p>
                 </div>
               </div>

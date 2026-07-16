@@ -231,6 +231,7 @@ services:
     entrypoint: ["java", "-Xmx64m", "-Xms32m", "-Xss256k", "-XX:TieredStopAtLevel=1", "-XX:+UseSerialGC", "-jar", "app.jar"]
     environment:
       - SPRING_PROFILES_ACTIVE=prod
+      - TZ=Asia/Ho_Chi_Minh
       - SERVER_PORT=8085
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/careermate_db
       - DB_USERNAME=${DB_USERNAME:-postgres}
@@ -257,6 +258,7 @@ services:
     entrypoint: ["java", "-Xmx192m", "-Xms96m", "-Xss256k", "-XX:TieredStopAtLevel=1", "-XX:+UseSerialGC", "-jar", "app.jar"]
     environment:
       - SPRING_PROFILES_ACTIVE=prod
+      - TZ=Asia/Ho_Chi_Minh
       - SERVER_PORT=8086
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/careermate_db
       - DB_USERNAME=${DB_USERNAME:-postgres}
