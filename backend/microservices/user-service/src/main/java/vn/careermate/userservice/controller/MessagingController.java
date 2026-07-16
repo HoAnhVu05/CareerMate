@@ -71,7 +71,7 @@ public class MessagingController {
         try {
             messagingService.getConversation(conversationId);
             String storedPath = fileStorageService.storeFile(file, "chat");
-            String url = "/uploads/" + storedPath;
+            String url = storedPath;
             return ResponseEntity.ok(Map.of("url", url));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
