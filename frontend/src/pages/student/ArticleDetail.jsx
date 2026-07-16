@@ -113,16 +113,17 @@ export default function ArticleDetail({ articleId: propId, isModal, onClose }) {
   const [showAuthorModal, setShowAuthorModal] = useState(false);
   const reactionCloseTimeoutRef = useRef(null);
 
-  const getReactionEmojiUrl = (type) => {
-    const urls = {
-      LIKE: 'https://cdn.jsdelivr.net/gh/jdecked/twemoji@14.1.2/assets/svg/1f44d.svg',
-      LOVE: 'https://cdn.jsdelivr.net/gh/jdecked/twemoji@14.1.2/assets/svg/2764.svg',
-      HAHA: 'https://cdn.jsdelivr.net/gh/jdecked/twemoji@14.1.2/assets/svg/1f602.svg',
-      WOW: 'https://cdn.jsdelivr.net/gh/jdecked/twemoji@14.1.2/assets/svg/1f62e.svg',
-      SAD: 'https://cdn.jsdelivr.net/gh/jdecked/twemoji@14.1.2/assets/svg/1f622.svg',
-      ANGRY: 'https://cdn.jsdelivr.net/gh/jdecked/twemoji@14.1.2/assets/svg/1f621.svg'
+  // Use native Unicode emoji — no CDN dependency, always renders
+  const getReactionEmoji = (type) => {
+    const emojis = {
+      LIKE: '👍',
+      LOVE: '❤️',
+      HAHA: '😂',
+      WOW: '😮',
+      SAD: '😢',
+      ANGRY: '😡'
     };
-    return urls[type] || urls.LIKE;
+    return emojis[type] || '👍';
   };
 
   const handleMouseEnter = () => {
@@ -551,12 +552,11 @@ export default function ArticleDetail({ articleId: propId, isModal, onClose }) {
                   .filter(([_, count]) => count > 0)
                   .slice(0, 3)
                   .map(([type, _]) => (
-                    <img 
-                      key={type} 
-                      src={getReactionEmojiUrl(type)} 
-                      className="w-5 h-5 object-contain border border-white dark:border-slate-900 rounded-full bg-white dark:bg-slate-900 p-0.5 transform hover:scale-125 transition-transform" 
-                      alt={type} 
-                    />
+                    <span
+                      key={type}
+                      className="text-base leading-none border border-white dark:border-slate-900 rounded-full bg-white dark:bg-slate-900 p-0.5 transform hover:scale-125 transition-transform inline-flex items-center justify-center"
+                      title={type}
+                    >{getReactionEmoji(type)}</span>
                   ))}
               </div>
               <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{getTotalReactions()} lượt thích</span>
@@ -584,12 +584,7 @@ export default function ArticleDetail({ articleId: propId, isModal, onClose }) {
             }`}
           >
             {myReaction ? (
-              <img 
-                src={getReactionEmojiUrl(myReaction.reactionType)} 
-                onContextMenu={(e) => e.preventDefault()}
-                className="w-5 h-5 object-contain select-none" 
-                alt={myReaction.reactionType} 
-              />
+              <span className="text-xl select-none leading-none">{getReactionEmoji(myReaction.reactionType)}</span>
             ) : (
               <span className="text-lg select-none">👍</span>
             )}
@@ -598,44 +593,42 @@ export default function ArticleDetail({ articleId: propId, isModal, onClose }) {
 
           {/* Facebook-style Reaction Picker */}
           {showReactionPicker && (
-            <div 
-              onContextMenu={(e) => e.preventDefault()}
-              className="absolute right-0 bottom-full mb-2 flex items-center gap-2 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-full shadow-2xl px-3 py-2 border border-slate-100 dark:border-slate-800 z-30 animate-reaction-pop origin-bottom select-none"
-            >
-              {[
-                { type: 'LIKE', label: 'Thích' },
-                { type: 'LOVE', label: 'Yêu thích' },
-                { type: 'HAHA', label: 'Haha' },
-                { type: 'WOW', label: 'Wow' },
-                { type: 'SAD', label: 'Buồn' },
-                { type: 'ANGRY', label: 'Phẫn nộ' }
-              ].map((item, idx) => (
-                <button
-                  key={item.type}
-                  type="button"
-                  onClick={() => {
-                    handleReaction(item.type);
-                    setShowReactionPicker(false);
-                  }}
-                  onContextMenu={(e) => e.preventDefault()}
-                  className="relative group/emoji hover:scale-150 hover:-translate-y-2.5 transition-all duration-300 p-1.5 flex items-center justify-center rounded-full active:scale-95 animate-reaction-item select-none"
-                  title={item.label}
-                  style={{
-                    animationDelay: `${idx * 40}ms`
-                  }}
-                >
-                  <img 
-                    src={getReactionEmojiUrl(item.type)} 
+            <>
+              {/* Mobile backdrop — tap outside to dismiss */}
+              <div
+                className="fixed inset-0 z-20 md:hidden"
+                onTouchStart={() => setShowReactionPicker(false)}
+              />
+              <div
+                onContextMenu={(e) => e.preventDefault()}
+                className="absolute right-0 bottom-full mb-2 flex items-center gap-1 bg-white dark:bg-slate-900 backdrop-blur-md rounded-full shadow-2xl px-3 py-2 border border-slate-200 dark:border-slate-700 z-30 animate-reaction-pop origin-bottom select-none"
+              >
+                {[
+                  { type: 'LIKE', label: 'Thích' },
+                  { type: 'LOVE', label: 'Yêu thích' },
+                  { type: 'HAHA', label: 'Haha' },
+                  { type: 'WOW', label: 'Wow' },
+                  { type: 'SAD', label: 'Buồn' },
+                  { type: 'ANGRY', label: 'Phẫn nộ' }
+                ].map((item, idx) => (
+                  <button
+                    key={item.type}
+                    type="button"
+                    onClick={() => {
+                      handleReaction(item.type);
+                      setShowReactionPicker(false);
+                    }}
                     onContextMenu={(e) => e.preventDefault()}
-                    className="w-9 h-9 object-contain filter drop-shadow-sm select-none" 
-                    alt={item.label} 
-                  />
-                  <span className="emoji-tooltip select-none">
-                    {item.label}
-                  </span>
-                </button>
-              ))}
-            </div>
+                    className="relative group/emoji hover:scale-150 hover:-translate-y-3 transition-all duration-200 p-1.5 flex flex-col items-center justify-center rounded-full active:scale-90 animate-reaction-item select-none"
+                    title={item.label}
+                    style={{ animationDelay: `${idx * 40}ms` }}
+                  >
+                    <span className="text-3xl leading-none select-none drop-shadow-sm">{getReactionEmoji(item.type)}</span>
+                    <span className="emoji-tooltip select-none">{item.label}</span>
+                  </button>
+                ))}
+              </div>
+            </>
           )}
         </div>
       </div>
