@@ -438,7 +438,7 @@ export default function Messages() {
       <div className="flex-1 bg-white/60 dark:bg-gray-800/40 backdrop-blur-2xl rounded-3xl shadow-2xl overflow-hidden border border-white/20 dark:border-white/5 flex flex-col md:flex-row">
 
         {/* Conversations List - Left Side */}
-        <div className="w-full md:w-[350px] lg:w-[400px] border-r border-gray-100 dark:border-gray-700/50 flex flex-col bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
+        <div className={`${selectedConversation ? 'hidden md:flex' : 'flex'} w-full md:w-[350px] lg:w-[400px] border-r border-gray-100 dark:border-gray-700/50 flex flex-col bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm`}>
           {/* Header */}
           <div className="p-6 border-b border-gray-100 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-gray-800 dark:to-gray-800">
             <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent flex items-center gap-3 mb-4">
@@ -619,7 +619,7 @@ export default function Messages() {
         </div>
 
         {/* Messages - Right Side */}
-        <div className="flex-1 flex flex-col bg-white/30 dark:bg-gray-900/30 backdrop-blur-xl relative">
+        <div className={`${!selectedConversation ? 'hidden md:flex' : 'flex'} flex-1 flex-col bg-white/30 dark:bg-gray-900/30 backdrop-blur-xl relative`}>
           {/* Decorative background */}
           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 pointer-events-none"></div>
 
@@ -637,7 +637,15 @@ export default function Messages() {
             <>
               {/* Messages Header */}
               <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700/50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md flex items-center justify-between sticky top-0 z-20">
-                {(() => {
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setSelectedConversation(null)}
+                    className="md:hidden mr-2 p-2 -ml-2 text-gray-600 dark:text-gray-300"
+                    title="Quay lại"
+                  >
+                    <i className="fas fa-chevron-left"></i>
+                  </button>
+                  {(() => {
                   const otherUser = getOtherUser(selectedConversation);
                   if (!otherUser) return null;
                   const avatarUrl = getAvatarUrl(otherUser.avatarUrl);
@@ -684,6 +692,7 @@ export default function Messages() {
                     </div>
                   );
                 })()}
+              </div>
 
                 <div className="relative" ref={menuRef}>
                   <button
@@ -751,27 +760,31 @@ export default function Messages() {
                         )}
 
                         <div
-                          className={`max-w-[70%] relative px-5 py-3 shadow-sm text-sm leading-relaxed transition-all hover:shadow-md ${isMyMessage
-                            ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-2xl rounded-tr-sm'
-                            : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-100 dark:border-gray-700 rounded-2xl rounded-tl-sm'
-                            }`}
+                          className={`max-w-[70%] relative shadow-sm text-sm leading-relaxed transition-all hover:shadow-md ${
+                            msg?.content?.startsWith('[IMAGE]') && msg?.content !== '[IMAGE]loading'
+                              ? '' // no background/padding for actual images
+                              : `px-5 py-3 ${isMyMessage
+                                  ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-2xl rounded-tr-sm'
+                                  : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-100 dark:border-gray-700 rounded-2xl rounded-tl-sm'}`
+                          }`}
                         >
                           <div className="whitespace-pre-wrap break-words">
-                            {msg.content.startsWith('[IMAGE]') ? (
-                              msg.content === '[IMAGE]loading' ? (
+                            {msg?.content?.startsWith('[IMAGE]') ? (
+                              msg?.content === '[IMAGE]loading' ? (
                                 <div className="flex items-center gap-2 py-1 text-xs font-semibold text-slate-300">
                                   <i className="fas fa-circle-notch fa-spin text-blue-500"></i> Đang tải ảnh...
                                 </div>
                               ) : (
                                 <img
-                                  src={api.getFileUrl(msg.content.substring(7))}
+                                  src={msg?.content ? api.getFileUrl(msg.content.substring(7)) : ''}
                                   alt="Gửi ảnh"
-                                  className="max-w-xs rounded-xl cursor-pointer hover:opacity-90 transition-opacity shadow-sm"
-                                  onClick={() => window.open(api.getFileUrl(msg.content.substring(7)), '_blank')}
+                                  style={{ maxWidth: '240px', maxHeight: '220px', objectFit: 'contain' }}
+                                  className="rounded-xl cursor-pointer hover:opacity-90 transition-opacity shadow-sm block"
+                                  onClick={() => msg?.content && window.open(api.getFileUrl(msg.content.substring(7)), '_blank')}
                                 />
                               )
                             ) : (
-                              msg.content
+                              msg?.content || ''
                             )}
                           </div>
                           <div className={`text-[10px] mt-1 font-medium flex items-center justify-end gap-1 ${isMyMessage ? 'text-blue-100' : 'text-gray-400'}`}>

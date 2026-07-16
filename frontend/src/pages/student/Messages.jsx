@@ -624,26 +624,30 @@ export default function Messages() {
 
                       <div className={`max-w-[75%] space-y-1 ${isMe ? 'items-end flex flex-col' : 'items-start flex flex-col'}`}>
                         <div
-                          className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed shadow-sm relative ${isMe
-                            ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-br-none'
-                            : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-100 dark:border-gray-700 rounded-bl-none'
-                            }`}
+                          className={`rounded-2xl shadow-sm relative ${
+                            msg?.content?.startsWith('[IMAGE]') && msg?.content !== '[IMAGE]loading'
+                              ? '' // no background/padding for actual images
+                              : `px-4 py-2.5 ${isMe
+                                  ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-br-none'
+                                  : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-100 dark:border-gray-700 rounded-bl-none'}`
+                          }`}
                         >
-                          {msg.content.startsWith('[IMAGE]') ? (
-                            msg.content === '[IMAGE]loading' ? (
+                          {msg?.content?.startsWith('[IMAGE]') ? (
+                            msg?.content === '[IMAGE]loading' ? (
                               <div className="flex items-center gap-2 py-1 text-xs font-semibold text-slate-400">
                                 <i className="fas fa-circle-notch fa-spin text-blue-500"></i> Đang tải ảnh...
                               </div>
                             ) : (
                               <img
-                                src={api.getFileUrl(msg.content.substring(7))}
+                                src={msg?.content ? api.getFileUrl(msg.content.substring(7)) : ''}
                                 alt="Gửi ảnh"
-                                className="max-w-xs rounded-xl cursor-pointer hover:opacity-90 transition-opacity shadow-sm"
-                                onClick={() => window.open(api.getFileUrl(msg.content.substring(7)), '_blank')}
+                                style={{ maxWidth: '240px', maxHeight: '220px', objectFit: 'contain' }}
+                                className="rounded-xl cursor-pointer hover:opacity-90 transition-opacity shadow-sm block"
+                                onClick={() => msg?.content && window.open(api.getFileUrl(msg.content.substring(7)), '_blank')}
                               />
                             )
                           ) : (
-                            msg.content
+                            msg?.content || ''
                           )}
                         </div>
                         <span className={`text-[10px] text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity px-1`}>

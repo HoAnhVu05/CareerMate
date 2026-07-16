@@ -204,9 +204,9 @@ export default function Messages() {
   };
 
   return (
-    <div className="h-[calc(100vh-140px)] animate-fade-in flex gap-6 pb-6">
+    <div className="h-[calc(100vh-140px)] animate-fade-in flex flex-col md:flex-row gap-6 pb-6">
       {/* Sidebar List */}
-      <div className="w-[380px] flex flex-col bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] border border-white/50 dark:border-slate-800/50 shadow-2xl overflow-hidden shrink-0">
+      <div className={`${selectedRecruiter ? 'hidden md:flex' : 'flex'} w-full md:w-[380px] flex flex-col bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] border border-white/50 dark:border-slate-800/50 shadow-2xl overflow-hidden shrink-0`}>
         <div className="p-8 pb-4">
           <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
             <div className="w-10 h-10 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-sm">
@@ -263,7 +263,7 @@ export default function Messages() {
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] border border-white/50 dark:border-slate-800/50 shadow-2xl overflow-hidden relative">
+      <div className={`${!selectedRecruiter ? 'hidden md:flex' : 'flex'} flex-1 flex-col bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] border border-white/50 dark:border-slate-800/50 shadow-2xl overflow-hidden relative`}>
         {!selectedRecruiter ? (
           <div className="flex-1 flex flex-col items-center justify-center p-20 animate-fade-in text-center">
             <div className="w-32 h-32 bg-indigo-100 dark:bg-indigo-900/30 rounded-[3rem] flex items-center justify-center text-indigo-600 text-4xl mb-8 animate-bounce transition-all duration-[3000ms]">
@@ -277,6 +277,13 @@ export default function Messages() {
             {/* Header */}
             <div className="px-10 py-6 border-b border-white/20 dark:border-slate-800/50 flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-5">
+                <button
+                  onClick={() => setSelectedRecruiter(null)}
+                  className="md:hidden p-2 -ml-2 mr-2 text-slate-400 hover:text-slate-600 transition-colors"
+                  title="Quay lại"
+                >
+                  <i className="fas fa-chevron-left"></i>
+                </button>
                 <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-slate-800 overflow-hidden shadow-sm">
                   {selectedRecruiter.avatarUrl ? (
                     <img src={getAvatarUrl(selectedRecruiter.avatarUrl)} className="w-full h-full object-cover" alt="" />
@@ -318,25 +325,29 @@ export default function Messages() {
                 return (
                   <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} animate-scale-in`} style={{ animationDelay: `${idx * 20}ms` }}>
                     <div className={`max-w-[75%] space-y-2`}>
-                      <div className={`px-6 py-4 rounded-[2rem] shadow-sm text-sm font-medium ${isMe
-                        ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-tr-none'
-                        : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-white dark:border-slate-700 rounded-tl-none'
-                        }`}>
-                        {msg.content.startsWith('[IMAGE]') ? (
-                          msg.content === '[IMAGE]loading' ? (
+                      <div className={`rounded-[2rem] shadow-sm text-sm font-medium ${
+                        msg?.content?.startsWith('[IMAGE]') && msg?.content !== '[IMAGE]loading'
+                          ? '' // no background/padding for actual images
+                          : `px-6 py-4 ${isMe
+                              ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-tr-none'
+                              : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-white dark:border-slate-700 rounded-tl-none'}`
+                      }`}>
+                        {msg?.content?.startsWith('[IMAGE]') ? (
+                          msg?.content === '[IMAGE]loading' ? (
                             <div className="flex items-center gap-2 py-1 text-xs font-semibold text-slate-400">
                               <i className="fas fa-circle-notch fa-spin text-blue-500"></i> Đang tải ảnh...
                             </div>
                           ) : (
                             <img
-                              src={api.getFileUrl(msg.content.substring(7))}
+                              src={msg?.content ? api.getFileUrl(msg.content.substring(7)) : ''}
                               alt="Gửi ảnh"
-                              className="max-w-xs rounded-xl cursor-pointer hover:opacity-90 transition-opacity shadow-sm"
-                              onClick={() => window.open(api.getFileUrl(msg.content.substring(7)), '_blank')}
+                              style={{ maxWidth: '240px', maxHeight: '220px', objectFit: 'contain' }}
+                              className="rounded-2xl cursor-pointer hover:opacity-90 transition-opacity shadow-sm block"
+                              onClick={() => msg?.content && window.open(api.getFileUrl(msg.content.substring(7)), '_blank')}
                             />
                           )
                         ) : (
-                          msg.content
+                          msg?.content || ''
                         )}
                       </div>
                       <div className={`text-[9px] font-black uppercase tracking-widest px-2 ${isMe ? 'text-right text-indigo-400' : 'text-slate-400'}`}>
