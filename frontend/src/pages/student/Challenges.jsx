@@ -197,6 +197,8 @@ export default function Challenges() {
                     </div>
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Chưa có huy hiệu nào</h3>
                     <p className="text-gray-500">Hoàn thành các thử thách để mở khóa bộ sưu tập của bạn!</p>
+                  </div>
+                ) : (
                   <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
                     {myBadges.map((badge, idx) => (
                       <div
