@@ -136,26 +136,27 @@ export default function MobileMessages() {
                         const isMe = msg.sender?.id === user?.id;
                         return (
                             <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                                <div className={`max-w-[80%] px-4 py-2.5 rounded-[1.5rem] text-[10px] font-medium leading-relaxed shadow-sm ${isMe
-                                    ? 'bg-indigo-600 text-white rounded-br-none'
-                                    : 'bg-white dark:bg-slate-900 text-slate-800 dark:text-white rounded-bl-none border border-slate-100 dark:border-slate-800'}`}>
-                                    {msg.content.startsWith('[IMAGE]') ? (
-                                        msg.content === '[IMAGE]loading' ? (
-                                            <div className="flex items-center gap-2 py-1 text-[8px] font-bold text-slate-400">
-                                                <i className="fas fa-circle-notch fa-spin text-indigo-500"></i> Đang tải ảnh...
-                                            </div>
-                                        ) : (
-                                            <img
-                                                src={api.getFileUrl(msg.content.substring(7))}
-                                                alt="Gửi ảnh"
-                                                className="max-w-[180px] rounded-xl cursor-pointer hover:opacity-90 transition-opacity"
-                                                onClick={() => window.open(api.getFileUrl(msg.content.substring(7)), '_blank')}
-                                            />
-                                        )
+                                {msg.content.startsWith('[IMAGE]') ? (
+                                    msg.content === '[IMAGE]loading' ? (
+                                        <div className={`px-4 py-2.5 rounded-[1.5rem] text-[10px] font-medium shadow-sm flex items-center gap-2 ${isMe ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-slate-900 text-slate-400 border border-slate-100 dark:border-slate-800'}`}>
+                                            <i className="fas fa-circle-notch fa-spin text-indigo-400"></i> Đang tải ảnh...
+                                        </div>
                                     ) : (
-                                        msg.content
-                                    )}
-                                </div>
+                                        <img
+                                            src={api.getFileUrl(msg.content.substring(7))}
+                                            alt="Gửi ảnh"
+                                            style={{ maxWidth: '200px', maxHeight: '220px', objectFit: 'contain' }}
+                                            className="rounded-2xl cursor-pointer hover:opacity-90 transition-opacity shadow-md"
+                                            onClick={() => window.open(api.getFileUrl(msg.content.substring(7)), '_blank')}
+                                        />
+                                    )
+                                ) : (
+                                    <div className={`max-w-[80%] px-4 py-2.5 rounded-[1.5rem] text-[10px] font-medium leading-relaxed shadow-sm ${isMe
+                                        ? 'bg-indigo-600 text-white rounded-br-none'
+                                        : 'bg-white dark:bg-slate-900 text-slate-800 dark:text-white rounded-bl-none border border-slate-100 dark:border-slate-800'}`}>
+                                        {msg.content}
+                                    </div>
+                                )}
                             </div>
                         );
                     })}

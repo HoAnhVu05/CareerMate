@@ -751,10 +751,13 @@ export default function Messages() {
                         )}
 
                         <div
-                          className={`max-w-[70%] relative px-5 py-3 shadow-sm text-sm leading-relaxed transition-all hover:shadow-md ${isMyMessage
-                            ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-2xl rounded-tr-sm'
-                            : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-100 dark:border-gray-700 rounded-2xl rounded-tl-sm'
-                            }`}
+                          className={`max-w-[70%] relative shadow-sm text-sm leading-relaxed transition-all hover:shadow-md ${
+                            msg.content.startsWith('[IMAGE]') && msg.content !== '[IMAGE]loading'
+                              ? '' // no background/padding for actual images
+                              : `px-5 py-3 ${isMyMessage
+                                  ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-2xl rounded-tr-sm'
+                                  : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-100 dark:border-gray-700 rounded-2xl rounded-tl-sm'}`
+                          }`}
                         >
                           <div className="whitespace-pre-wrap break-words">
                             {msg.content.startsWith('[IMAGE]') ? (
@@ -766,7 +769,8 @@ export default function Messages() {
                                 <img
                                   src={api.getFileUrl(msg.content.substring(7))}
                                   alt="Gửi ảnh"
-                                  className="max-w-xs rounded-xl cursor-pointer hover:opacity-90 transition-opacity shadow-sm"
+                                  style={{ maxWidth: '240px', maxHeight: '220px', objectFit: 'contain' }}
+                                  className="rounded-xl cursor-pointer hover:opacity-90 transition-opacity shadow-sm block"
                                   onClick={() => window.open(api.getFileUrl(msg.content.substring(7)), '_blank')}
                                 />
                               )
@@ -774,10 +778,12 @@ export default function Messages() {
                               msg.content
                             )}
                           </div>
-                          <div className={`text-[10px] mt-1 font-medium flex items-center justify-end gap-1 ${isMyMessage ? 'text-blue-100' : 'text-gray-400'}`}>
-                            {formatTime(msg.createdAt)}
-                            {isMyMessage && <i className="fas fa-check-double text-[9px] opacity-70"></i>}
-                          </div>
+                          {!(msg.content.startsWith('[IMAGE]') && msg.content !== '[IMAGE]loading') && (
+                            <div className={`text-[10px] mt-1 font-medium flex items-center justify-end gap-1 ${isMyMessage ? 'text-blue-100' : 'text-gray-400'}`}>
+                              {formatTime(msg.createdAt)}
+                              {isMyMessage && <i className="fas fa-check-double text-[9px] opacity-70"></i>}
+                            </div>
+                          )}
                         </div>
 
                         {/* Actions (visible on hover) */}
