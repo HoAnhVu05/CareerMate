@@ -387,18 +387,6 @@ export default function ArticleCard({ article, onUpdate, showFullComments = fals
     return Object.values(reactionCounts).reduce((sum, count) => sum + count, 0);
   };
 
-  const getReactionEmoji = (type) => {
-    const emojis = {
-      LIKE: '👍',
-      LOVE: '❤️',
-      HAHA: '😂',
-      WOW: '😮',
-      SAD: '😢',
-      ANGRY: '😡'
-    };
-    return emojis[type] || '👍';
-  };
-
   const getReactionLabel = (type) => {
     const labels = {
       LIKE: 'Thích',
