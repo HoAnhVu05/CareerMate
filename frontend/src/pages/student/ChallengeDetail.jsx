@@ -14,6 +14,7 @@ export default function ChallengeDetail() {
   });
   const [showBadgeModal, setShowBadgeModal] = useState(false);
   const [earnedBadge, setEarnedBadge] = useState(null);
+  const [latestResult, setLatestResult] = useState(null);
 
   useEffect(() => {
     loadChallenge();
@@ -65,6 +66,7 @@ export default function ChallengeDetail() {
     try {
       console.log('Calling API participateChallenge...');
       const result = await api.participateChallenge(id, submission);
+      setLatestResult(result);
       console.log('=== API RESPONSE ===');
       console.log('Full result:', JSON.stringify(result, null, 2));
       console.log('Result status:', result.status);
@@ -342,6 +344,19 @@ export default function ChallengeDetail() {
               <h3 className="text-2xl font-bold text-white mb-2">{earnedBadge.name}</h3>
               {earnedBadge.description && (
                 <p className="text-white text-sm opacity-90">{earnedBadge.description}</p>
+              )}
+            </div>
+
+            {/* Score & AI Feedback inside Badge Modal */}
+            <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-2xl mb-6 border border-green-100 dark:border-green-800 text-left">
+              <p className="text-sm font-bold text-green-700 dark:text-green-400 mb-1 flex items-center gap-1.5">
+                <i className="fas fa-check-circle"></i>
+                Điểm đạt được: {latestResult?.score}/100
+              </p>
+              {latestResult?.feedback && (
+                <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed mt-2 whitespace-pre-wrap">
+                  <strong>Nhận xét từ AI:</strong> {latestResult.feedback}
+                </p>
               )}
             </div>
 

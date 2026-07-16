@@ -8,6 +8,7 @@ export default function MobileChallenges() {
     const [activeTab, setActiveTab] = useState('EXPLORE'); // EXPLORE, MINE, BADGES
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({ points: 0, badges: 0, completed: 0 });
+    const [selectedBadge, setSelectedBadge] = useState(null);
 
     useEffect(() => {
         loadData();
@@ -90,7 +91,11 @@ export default function MobileChallenges() {
                     <div className="grid grid-cols-2 gap-4">
                         {challenges.length === 0 ? <p className="col-span-2 text-center text-[10px] text-slate-400 py-10">Chưa có huy hiệu nào.</p> :
                             challenges.map((badge, idx) => (
-                                <div key={idx} className="bg-white dark:bg-slate-900 p-6 rounded-[2rem] text-center border border-slate-100 dark:border-slate-800 shadow-sm active:scale-95 transition-all">
+                                <div
+                                    key={idx}
+                                    onClick={() => setSelectedBadge(badge)}
+                                    className="bg-white dark:bg-slate-900 p-6 rounded-[2rem] text-center border border-slate-100 dark:border-slate-800 shadow-sm active:scale-95 transition-all cursor-pointer"
+                                >
                                     <div className="text-4xl mb-3">
                                         {badge.category === 'CV' ? '📄' : badge.category === 'INTERVIEW' ? '🎤' : '🏆'}
                                     </div>
@@ -122,12 +127,49 @@ export default function MobileChallenges() {
                                         <span className="text-[10px] font-bold text-slate-400"><i className="fas fa-star text-amber-400 mr-1"></i> {c.points || 0} XP</span>
                                         {c.badge && <span className="text-[10px] font-bold text-slate-400"><i className="fas fa-medal text-purple-400 mr-1"></i> Huy hiệu</span>}
                                     </div>
-                                    <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">{c.participation ? 'LÀM LẠI' : 'THAM GIA'}</span>
+                                    <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">{c.participation?.status === 'COMPLETED' ? 'Xem bài làm' : c.participation ? 'Tiếp tục' : 'Tham gia'}</span>
                                 </div>
                             </div>
                         ))
                 )}
             </div>
+
+            {/* Mobile Badge Details Modal */}
+            {selectedBadge && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end justify-center z-50 animate-fade-in" onClick={() => setSelectedBadge(null)}>
+                    <div className="bg-white dark:bg-slate-900 rounded-t-[3rem] p-8 w-full max-w-md border-t border-slate-100 dark:border-slate-800 shadow-2xl text-center pb-12" onClick={e => e.stopPropagation()}>
+                        <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full mx-auto mb-6"></div>
+                        
+                        <div className="text-7xl mb-4 animate-bounce">
+                            {selectedBadge.category === 'CV' ? '📄' : selectedBadge.category === 'INTERVIEW' ? '🎤' : '🏆'}
+                        </div>
+
+                        <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-2">
+                            {selectedBadge.name}
+                        </h3>
+
+                        <div className="flex justify-center gap-2 mb-4">
+                            <span className="px-2.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest bg-slate-100 dark:bg-slate-800 text-slate-500">
+                                {selectedBadge.category || 'General'}
+                            </span>
+                            <span className="px-2.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400">
+                                {selectedBadge.rarity || 'Common'}
+                            </span>
+                        </div>
+
+                        <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 leading-relaxed mb-8 px-4">
+                            {selectedBadge.description || 'Huy hiệu danh giá nhận được khi hoàn thành các thử thách tương ứng trên CareerMate.'}
+                        </p>
+
+                        <button
+                            onClick={() => setSelectedBadge(null)}
+                            className="w-full py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl transition active:scale-[0.98]"
+                        >
+                            Đóng
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
