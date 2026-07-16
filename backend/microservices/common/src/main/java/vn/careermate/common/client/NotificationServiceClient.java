@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import vn.careermate.common.dto.NotificationRequest;
 
-@FeignClient(name = "notification-service", path = "/notifications")
+@FeignClient(name = "notification-service", path = "/notifications", configuration = vn.careermate.common.config.FeignClientConfiguration.class)
 public interface NotificationServiceClient {
     @PostMapping("/create")
     void createNotification(@RequestBody NotificationRequest request);

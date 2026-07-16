@@ -25,7 +25,21 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/actuator/**").permitAll() // Health checks
-                .requestMatchers("/notifications/**").authenticated() // All notification endpoints require auth
+                .requestMatchers(
+                    "/notifications/create",
+                    "/notifications/job-approved",
+                    "/notifications/job-rejected",
+                    "/notifications/job-hidden",
+                    "/notifications/job-unhidden",
+                    "/notifications/job-deleted",
+                    "/notifications/article-approved",
+                    "/notifications/article-rejected",
+                    "/notifications/article-hidden",
+                    "/notifications/article-unhidden",
+                    "/notifications/article-deleted",
+                    "/notifications/challenge-completed"
+                ).permitAll() // Allow internal notification creation endpoints
+                .requestMatchers("/notifications/**").authenticated() // User endpoints
                 .requestMatchers(org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher("/v3/api-docs/**"), org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher("/v3/api-docs"), org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher("/swagger-ui/**"), org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher("/swagger-ui.html")).permitAll().anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
