@@ -318,13 +318,10 @@ export default function Messages() {
                 return (
                   <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} animate-scale-in`} style={{ animationDelay: `${idx * 20}ms` }}>
                     <div className={`max-w-[75%] space-y-2`}>
-                      <div className={`rounded-[2rem] shadow-sm text-sm font-medium ${
-                        msg.content.startsWith('[IMAGE]') && msg.content !== '[IMAGE]loading'
-                          ? '' // no background/padding for actual images
-                          : `px-6 py-4 ${isMe
-                              ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-tr-none'
-                              : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-white dark:border-slate-700 rounded-tl-none'}`
-                      }`}>
+                      <div className={`px-6 py-4 rounded-[2rem] shadow-sm text-sm font-medium ${isMe
+                        ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-tr-none'
+                        : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-white dark:border-slate-700 rounded-tl-none'
+                        }`}>
                         {msg.content.startsWith('[IMAGE]') ? (
                           msg.content === '[IMAGE]loading' ? (
                             <div className="flex items-center gap-2 py-1 text-xs font-semibold text-slate-400">
@@ -334,8 +331,7 @@ export default function Messages() {
                             <img
                               src={api.getFileUrl(msg.content.substring(7))}
                               alt="Gửi ảnh"
-                              style={{ maxWidth: '240px', maxHeight: '220px', objectFit: 'contain' }}
-                              className="rounded-2xl cursor-pointer hover:opacity-90 transition-opacity shadow-sm block"
+                              className="max-w-xs rounded-xl cursor-pointer hover:opacity-90 transition-opacity shadow-sm"
                               onClick={() => window.open(api.getFileUrl(msg.content.substring(7)), '_blank')}
                             />
                           )

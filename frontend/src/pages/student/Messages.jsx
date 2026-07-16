@@ -624,13 +624,10 @@ export default function Messages() {
 
                       <div className={`max-w-[75%] space-y-1 ${isMe ? 'items-end flex flex-col' : 'items-start flex flex-col'}`}>
                         <div
-                          className={`rounded-2xl shadow-sm relative ${
-                            msg.content.startsWith('[IMAGE]') && msg.content !== '[IMAGE]loading'
-                              ? '' // no background/padding for actual images
-                              : `px-4 py-2.5 ${isMe
-                                  ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-br-none'
-                                  : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-100 dark:border-gray-700 rounded-bl-none'}`
-                          }`}
+                          className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed shadow-sm relative ${isMe
+                            ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-br-none'
+                            : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-100 dark:border-gray-700 rounded-bl-none'
+                            }`}
                         >
                           {msg.content.startsWith('[IMAGE]') ? (
                             msg.content === '[IMAGE]loading' ? (
@@ -641,8 +638,7 @@ export default function Messages() {
                               <img
                                 src={api.getFileUrl(msg.content.substring(7))}
                                 alt="Gửi ảnh"
-                                style={{ maxWidth: '240px', maxHeight: '220px', objectFit: 'contain' }}
-                                className="rounded-xl cursor-pointer hover:opacity-90 transition-opacity shadow-sm block"
+                                className="max-w-xs rounded-xl cursor-pointer hover:opacity-90 transition-opacity shadow-sm"
                                 onClick={() => window.open(api.getFileUrl(msg.content.substring(7)), '_blank')}
                               />
                             )
