@@ -36,13 +36,31 @@ export default function MobileApplications() {
         return applications.filter(app => app.status === activeTab);
     };
 
+    const getStatusText = (status) => {
+        switch (status) {
+            case 'PENDING': return 'Chờ duyệt';
+            case 'VIEWED': return 'Đã xem';
+            case 'SHORTLISTED': return 'Phù hợp';
+            case 'INTERVIEW': return 'Phỏng vấn';
+            case 'OFFERED': return 'Trúng tuyển';
+            case 'ACCEPTED': return 'Nhận việc';
+            case 'REJECTED': return 'Từ chối';
+            case 'WITHDRAWN': return 'Đã hủy';
+            default: return status;
+        }
+    };
+
     const getStatusStyle = (status) => {
         switch (status) {
-            case 'PENDING': return 'bg-amber-50 text-amber-600 border-amber-100';
-            case 'INTERVIEW': return 'bg-blue-50 text-blue-600 border-blue-100';
-            case 'SELECTED': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
-            case 'REJECTED': return 'bg-rose-50 text-rose-600 border-rose-100';
-            default: return 'bg-slate-50 text-slate-600 border-slate-100';
+            case 'PENDING': return 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/30';
+            case 'VIEWED': return 'bg-cyan-50 text-cyan-600 border-cyan-100 dark:bg-cyan-950/20 dark:text-cyan-400 dark:border-cyan-900/30';
+            case 'SHORTLISTED': return 'bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-950/20 dark:text-purple-400 dark:border-purple-900/30';
+            case 'INTERVIEW': return 'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-950/20 dark:text-blue-400 dark:border-blue-900/30';
+            case 'OFFERED': return 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/30';
+            case 'ACCEPTED': return 'bg-green-50 text-green-600 border-green-100 dark:bg-green-950/20 dark:text-green-400 dark:border-green-900/30';
+            case 'REJECTED': return 'bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-950/20 dark:text-rose-400 dark:border-rose-900/30';
+            case 'WITHDRAWN': return 'bg-slate-50 text-slate-600 border-slate-100 dark:bg-slate-900/20 dark:text-slate-400 dark:border-slate-800';
+            default: return 'bg-slate-50 text-slate-600 border-slate-100 dark:bg-slate-900/20 dark:text-slate-400 dark:border-slate-800';
         }
     };
 
@@ -102,7 +120,7 @@ export default function MobileApplications() {
                                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">{app.job.companyName}</p>
                                 </div>
                                 <div className={`px-3 py-1 rounded-full text-[10px] font-black border uppercase h-fit ${getStatusStyle(app.status)}`}>
-                                    {app.status}
+                                    {getStatusText(app.status)}
                                 </div>
                             </div>
 

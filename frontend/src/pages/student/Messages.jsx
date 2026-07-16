@@ -29,6 +29,9 @@ export default function Messages() {
   const [showMenu, setShowMenu] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('messages'); // 'messages' or 'recruiters'
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const fileInputRef = useRef(null);
+  const emojis = ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐', '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑', '🤠', '😈', '👿', '👹', '👺', '🤡', '💩', '👻', '💀', '☠️', '👽', '👾', '🤖', '🎃', '😺', '😸', '😹', '😻', '😼', '😽', '🙀', '😿', '😾'];
 
   // Recruiter List State (now for tab, not modal)
   const [recruiterList, setRecruiterList] = useState([]);
@@ -233,6 +236,38 @@ export default function Messages() {
       const data = await api.getUnreadCount();
       setUnreadCount(data.count || 0);
     } catch (error) { }
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !selectedConversation) return;
+
+    const tempId = 'temp-' + Date.now();
+    const tempMsg = {
+      id: tempId,
+      content: '[IMAGE]loading',
+      sender: user,
+      createdAt: new Date().toISOString(),
+      isTemp: true
+    };
+    setMessages(prev => [...prev, tempMsg]);
+
+    try {
+      const res = await api.uploadChatImage(selectedConversation.id, file);
+      const imageUrl = res.url;
+      const sentMsg = await api.sendMessage(selectedConversation.id, `[IMAGE]${imageUrl}`);
+      
+      setMessages(prev => prev.map(m => m.id === tempId ? {
+        id: sentMsg.id,
+        content: `[IMAGE]${imageUrl}`,
+        sender: user,
+        createdAt: sentMsg.createdAt || new Date().toISOString()
+      } : m));
+    } catch (error) {
+      console.error('Image upload failed:', error);
+      alert('Không thể gửi ảnh');
+      setMessages(prev => prev.filter(m => m.id !== tempId));
+    }
   };
 
   const handleSend = async (e) => {
@@ -595,7 +630,22 @@ export default function Messages() {
                             : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-100 dark:border-gray-700 rounded-bl-none'
                             }`}
                         >
-                          {msg.content}
+                          {msg.content.startsWith('[IMAGE]') ? (
+                            msg.content === '[IMAGE]loading' ? (
+                              <div className="flex items-center gap-2 py-1 text-xs font-semibold text-slate-400">
+                                <i className="fas fa-circle-notch fa-spin text-blue-500"></i> Đang tải ảnh...
+                              </div>
+                            ) : (
+                              <img
+                                src={api.getFileUrl(msg.content.substring(7))}
+                                alt="Gửi ảnh"
+                                className="max-w-xs rounded-xl cursor-pointer hover:opacity-90 transition-opacity shadow-sm"
+                                onClick={() => window.open(api.getFileUrl(msg.content.substring(7)), '_blank')}
+                              />
+                            )
+                          ) : (
+                            msg.content
+                          )}
                         </div>
                         <span className={`text-[10px] text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity px-1`}>
                           {parseUTCDate(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -628,11 +678,22 @@ export default function Messages() {
                 >
                   <i className="fas fa-user-plus"></i>
                 </button>
-                <button type="button" className="p-3 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-gray-800 rounded-full transition-colors">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleImageUpload}
+                  accept="image/*"
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-3 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-gray-800 rounded-full transition-colors"
+                >
                   <i className="fas fa-image"></i>
                 </button>
 
-                <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center px-4 py-1.5 focus-within:ring-2 ring-blue-500/30 transition-shadow">
+                <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center px-4 py-1.5 focus-within:ring-2 ring-blue-500/30 transition-shadow relative">
                   <input
                     type="text"
                     className="w-full bg-transparent border-none focus:ring-0 py-2.5 text-sm max-h-32 dark:text-white"
@@ -640,9 +701,31 @@ export default function Messages() {
                     value={input}
                     onChange={e => setInput(e.target.value)}
                   />
-                  <button type="button" className="p-2 text-gray-400 hover:text-yellow-500 transition">
+                  <button
+                    type="button"
+                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                    className="p-2 text-gray-400 hover:text-yellow-500 transition"
+                  >
                     <i className="far fa-smile"></i>
                   </button>
+
+                  {showEmojiPicker && (
+                    <div className="absolute bottom-16 right-0 p-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-xl max-w-[280px] grid grid-cols-7 gap-1.5 h-48 overflow-y-auto z-50">
+                      {emojis.map((emoji) => (
+                        <button
+                          key={emoji}
+                          type="button"
+                          onClick={() => {
+                            setInput(prev => prev + emoji);
+                            setShowEmojiPicker(false);
+                          }}
+                          className="w-8 h-8 flex items-center justify-center text-lg hover:bg-slate-100 dark:hover:bg-gray-750 rounded-lg active:scale-90 transition-transform"
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <button

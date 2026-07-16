@@ -16,6 +16,9 @@ export default function Messages() {
   const [lastMessages, setLastMessages] = useState({});
   const [showUserInfoModal, setShowUserInfoModal] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const fileInputRef = useRef(null);
+  const emojis = ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐', '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑', '🤠', '😈', '👿', '👹', '👺', '🤡', '💩', '👻', '💀', '☠️', '👽', '👾', '🤖', '🎃', '😺', '😸', '😹', '😻', '😼', '😽', '🙀', '😿', '😾'];
   const messagesEndRef = useRef(null);
   const pollingIntervalRef = useRef(null);
   const menuRef = useRef(null);
@@ -114,6 +117,38 @@ export default function Messages() {
     } catch (error) {
       console.error('Error creating conversation:', error);
       alert('Lỗi: ' + (error.response?.data?.error || 'Không thể tạo cuộc trò chuyện'));
+    }
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !conversation) return;
+
+    const tempId = 'temp-' + Date.now();
+    const tempMsg = {
+      id: tempId,
+      content: '[IMAGE]loading',
+      sender: user,
+      createdAt: new Date().toISOString(),
+      isTemp: true
+    };
+    setMessages(prev => [...prev, tempMsg]);
+
+    try {
+      const res = await api.uploadChatImage(conversation.id, file);
+      const imageUrl = res.url;
+      const sentMsg = await api.sendAdminMessage(conversation.id, `[IMAGE]${imageUrl}`);
+      
+      setMessages(prev => prev.map(m => m.id === tempId ? {
+        id: sentMsg.id,
+        content: `[IMAGE]${imageUrl}`,
+        sender: user,
+        createdAt: sentMsg.createdAt || new Date().toISOString()
+      } : m));
+    } catch (error) {
+      console.error('Image upload failed:', error);
+      alert('Không thể gửi ảnh');
+      setMessages(prev => prev.filter(m => m.id !== tempId));
     }
   };
 
@@ -288,7 +323,22 @@ export default function Messages() {
                         ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-tr-none'
                         : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-white dark:border-slate-700 rounded-tl-none'
                         }`}>
-                        {msg.content}
+                        {msg.content.startsWith('[IMAGE]') ? (
+                          msg.content === '[IMAGE]loading' ? (
+                            <div className="flex items-center gap-2 py-1 text-xs font-semibold text-slate-400">
+                              <i className="fas fa-circle-notch fa-spin text-blue-500"></i> Đang tải ảnh...
+                            </div>
+                          ) : (
+                            <img
+                              src={api.getFileUrl(msg.content.substring(7))}
+                              alt="Gửi ảnh"
+                              className="max-w-xs rounded-xl cursor-pointer hover:opacity-90 transition-opacity shadow-sm"
+                              onClick={() => window.open(api.getFileUrl(msg.content.substring(7)), '_blank')}
+                            />
+                          )
+                        ) : (
+                          msg.content
+                        )}
                       </div>
                       <div className={`text-[9px] font-black uppercase tracking-widest px-2 ${isMe ? 'text-right text-indigo-400' : 'text-slate-400'}`}>
                         {formatTime(msg.createdAt)}
@@ -304,16 +354,59 @@ export default function Messages() {
             <div className="p-8">
               <form onSubmit={handleSend} className="relative flex items-center gap-4 bg-white dark:bg-slate-800 rounded-[2rem] border border-white/50 dark:border-slate-700/50 p-2 pl-4 shadow-xl focus-within:border-indigo-500/50 transition-all">
                 <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleImageUpload}
+                  accept="image/*"
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-3 text-slate-450 hover:text-indigo-600 transition"
+                  title="Gửi hình ảnh"
+                >
+                  <i className="fas fa-image text-lg"></i>
+                </button>
+
+                <input
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Viết phản hồi hỗ trợ..."
                   className="flex-1 bg-transparent py-4 text-sm font-medium outline-none dark:text-white"
                 />
+
+                <button
+                  type="button"
+                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                  className="p-3 text-slate-450 hover:text-yellow-500 transition"
+                >
+                  <i className="far fa-smile text-lg"></i>
+                </button>
+
+                {showEmojiPicker && (
+                  <div className="absolute bottom-20 right-4 p-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-xl max-w-[280px] grid grid-cols-7 gap-1.5 h-48 overflow-y-auto z-50">
+                    {emojis.map((emoji) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick={() => {
+                          setInput(prev => prev + emoji);
+                          setShowEmojiPicker(false);
+                        }}
+                        className="w-8 h-8 flex items-center justify-center text-lg hover:bg-slate-100 dark:hover:bg-gray-750 rounded-lg active:scale-90 transition-transform"
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
                 <button
                   type="submit"
                   disabled={!input.trim() || loading}
-                  className="w-14 h-14 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[1.5rem] flex items-center justify-center text-lg shadow-xl shadow-slate-900/10 hover:shadow-indigo-500/20 active:scale-95 transition-all disabled:opacity-30"
+                  className="w-14 h-14 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[1.5rem] flex items-center justify-center text-lg shadow-xl shadow-slate-900/10 hover:shadow-indigo-500/20 active:scale-95 transition-all disabled:opacity-30 flex-shrink-0"
                 >
                   <i className={`fas ${loading ? 'fa-spinner fa-spin' : 'fa-paper-plane'}`}></i>
                 </button>

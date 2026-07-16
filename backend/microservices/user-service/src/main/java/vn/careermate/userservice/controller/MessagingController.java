@@ -19,6 +19,7 @@ import java.util.UUID;
 public class MessagingController {
 
     private final MessagingService messagingService;
+    private final vn.careermate.userservice.service.FileStorageService fileStorageService;
 
     @GetMapping("/conversations")
     @PreAuthorize("hasAnyRole('STUDENT', 'RECRUITER', 'ADMIN')")
@@ -59,6 +60,22 @@ public class MessagingController {
             return ResponseEntity.badRequest().build();
         }
         return ResponseEntity.ok(messagingService.sendMessage(conversationId, content));
+    }
+
+    @PostMapping("/conversations/{conversationId}/upload-image")
+    @PreAuthorize("hasAnyRole('STUDENT', 'RECRUITER', 'ADMIN')")
+    public ResponseEntity<Map<String, String>> uploadChatImage(
+            @PathVariable UUID conversationId,
+            @RequestParam("file") org.springframework.web.multipart.MultipartFile file
+    ) {
+        try {
+            messagingService.getConversation(conversationId);
+            String storedPath = fileStorageService.storeFile(file, "chat");
+            String url = "/uploads/" + storedPath;
+            return ResponseEntity.ok(Map.of("url", url));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     @PostMapping("/messages")

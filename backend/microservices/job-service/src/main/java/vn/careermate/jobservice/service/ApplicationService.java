@@ -358,13 +358,13 @@ public class ApplicationService {
 
     private String getStatusText(Application.ApplicationStatus status) {
         switch (status) {
-            case PENDING: return "Đang chờ";
-            case VIEWED: return "Đã xem";
-            case SHORTLISTED: return "Đã chọn";
-            case INTERVIEW: return "Phỏng vấn";
-            case OFFERED: return "Đã đề xuất";
-            case REJECTED: return "Đã từ chối";
-            case WITHDRAWN: return "Đã rút";
+            case PENDING: return "Đang chờ duyệt";
+            case VIEWED: return "Đã xem hồ sơ";
+            case SHORTLISTED: return "Hồ sơ phù hợp (Shortlist)";
+            case INTERVIEW: return "Lên lịch phỏng vấn";
+            case OFFERED: return "Trúng tuyển (Offer)";
+            case REJECTED: return "Từ chối";
+            case WITHDRAWN: return "Đã rút hồ sơ";
             default: return status.name();
         }
     }

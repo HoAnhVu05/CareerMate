@@ -25,11 +25,34 @@ export default function MobileNotifications() {
         }
     };
 
-    const handleMarkRead = async (id) => {
-        try {
-            await api.markNotificationAsRead(id);
-            setNotifications(prev => prev.map(n => n.id === id ? { ...n, status: 'READ' } : n));
-        } catch (e) { }
+    const handleNotificationClick = async (n) => {
+        if (n.status === 'UNREAD') {
+            try {
+                await api.markNotificationAsRead(n.id);
+                setNotifications(prev => prev.map(item => item.id === n.id ? { ...item, status: 'READ' } : item));
+            } catch (e) { }
+        }
+
+        let targetUrl = n.linkUrl;
+        if (!targetUrl && n.relatedEntityType && n.relatedEntityId) {
+            if (n.relatedEntityType === 'APPLICATION') {
+                if (n.type === 'NEW_APPLICATION') {
+                    targetUrl = '/mobile/applicants';
+                } else {
+                    targetUrl = '/mobile/applications';
+                }
+            } else if (n.relatedEntityType === 'JOB') {
+                targetUrl = '/mobile/jobs';
+            } else if (n.relatedEntityType === 'CHALLENGE') {
+                targetUrl = `/mobile/challenges/${n.relatedEntityId}`;
+            } else if (n.relatedEntityType === 'CONVERSATION') {
+                targetUrl = `/mobile/messages?conversationId=${n.relatedEntityId}`;
+            }
+        }
+
+        if (targetUrl) {
+            navigate(targetUrl);
+        }
     };
 
     const getIcon = (type) => {
@@ -66,7 +89,7 @@ export default function MobileNotifications() {
                         return (
                             <div
                                 key={n.id}
-                                onClick={() => handleMarkRead(n.id)}
+                                onClick={() => handleNotificationClick(n)}
                                 className={`flex gap-4 p-5 rounded-[2rem] border transition-all ${isUnread
                                     ? 'bg-white dark:bg-slate-900 border-indigo-100 dark:border-indigo-900/30 shadow-md shadow-indigo-500/5'
                                     : 'bg-slate-50 dark:bg-slate-900/50 border-transparent opacity-60'}`}

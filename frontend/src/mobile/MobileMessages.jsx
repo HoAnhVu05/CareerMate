@@ -14,6 +14,9 @@ export default function MobileMessages() {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const fileInputRef = useRef(null);
+    const emojis = ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐', '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑', '🤠', '😈', '👿', '👹', '👺', '🤡', '💩', '👻', '💀', '☠️', '👽', '👾', '🤖', '🎃', '😺', '😸', '😹', '😻', '😼', '😽', '🙀', '😿', '😾'];
 
     const messagesEndRef = useRef(null);
     const pollingRef = useRef(null);
@@ -56,6 +59,32 @@ export default function MobileMessages() {
             setMessages(sorted);
             if (!silent) api.markConversationAsRead(id).catch(() => { });
         } catch (e) { }
+    };
+
+    const handleImageUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file || !selectedConv) return;
+
+        const tempId = 'temp-' + Date.now();
+        const tempMsg = {
+            id: tempId,
+            content: '[IMAGE]loading',
+            sender: user,
+            createdAt: new Date().toISOString(),
+            isTemp: true
+        };
+        setMessages(prev => [...prev, tempMsg]);
+
+        try {
+            const res = await api.uploadChatImage(selectedConv.id, file);
+            const imageUrl = res.url;
+            await api.sendMessage(selectedConv.id, `[IMAGE]${imageUrl}`);
+            loadMessages(selectedConv.id, true);
+        } catch (error) {
+            console.error('Image upload failed:', error);
+            alert('Không thể gửi ảnh');
+            setMessages(prev => prev.filter(m => m.id !== tempId));
+        }
     };
 
     const handleSend = async (e) => {
@@ -105,7 +134,22 @@ export default function MobileMessages() {
                                 <div className={`max-w-[80%] px-4 py-2.5 rounded-[1.5rem] text-[10px] font-medium leading-relaxed shadow-sm ${isMe
                                     ? 'bg-indigo-600 text-white rounded-br-none'
                                     : 'bg-white dark:bg-slate-900 text-slate-800 dark:text-white rounded-bl-none border border-slate-100 dark:border-slate-800'}`}>
-                                    {msg.content}
+                                    {msg.content.startsWith('[IMAGE]') ? (
+                                        msg.content === '[IMAGE]loading' ? (
+                                            <div className="flex items-center gap-2 py-1 text-[8px] font-bold text-slate-400">
+                                                <i className="fas fa-circle-notch fa-spin text-indigo-500"></i> Đang tải ảnh...
+                                            </div>
+                                        ) : (
+                                            <img
+                                                src={api.getFileUrl(msg.content.substring(7))}
+                                                alt="Gửi ảnh"
+                                                className="max-w-[180px] rounded-xl cursor-pointer hover:opacity-90 transition-opacity"
+                                                onClick={() => window.open(api.getFileUrl(msg.content.substring(7)), '_blank')}
+                                            />
+                                        )
+                                    ) : (
+                                        msg.content
+                                    )}
                                 </div>
                             </div>
                         );
@@ -114,16 +158,60 @@ export default function MobileMessages() {
                 </div>
 
                 {/* Input Bar */}
-                <div className="p-4 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 safe-bottom">
-                    <form onSubmit={handleSend} className="flex gap-2">
-                        <input
-                            type="text"
-                            className="flex-1 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl px-4 py-3 text-[10px] font-bold dark:text-white focus:ring-2 focus:ring-indigo-600 transition-all"
-                            placeholder="Nhập tin nhắn..."
-                            value={input}
-                            onChange={e => setInput(e.target.value)}
-                        />
-                        <button type="submit" className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center active:scale-95 transition-transform">
+                <div className="p-4 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 safe-bottom relative">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleImageUpload}
+                      accept="image/*"
+                      className="hidden"
+                    />
+                    <form onSubmit={handleSend} className="flex gap-2 items-center">
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="w-10 h-10 bg-slate-50 dark:bg-slate-800 text-slate-400 rounded-2xl flex items-center justify-center flex-shrink-0"
+                          title="Gửi hình ảnh"
+                        >
+                          <i className="fas fa-image text-sm"></i>
+                        </button>
+
+                        <div className="flex-1 bg-slate-50 dark:bg-slate-800 rounded-2xl flex items-center px-3 py-1 relative">
+                          <input
+                              type="text"
+                              className="w-full bg-transparent border-none focus:ring-0 py-2 text-[10px] font-bold dark:text-white"
+                              placeholder="Nhập tin nhắn..."
+                              value={input}
+                              onChange={e => setInput(e.target.value)}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                            className="p-2 text-slate-400"
+                          >
+                            <i className="far fa-smile text-sm"></i>
+                          </button>
+
+                          {showEmojiPicker && (
+                            <div className="absolute bottom-14 right-0 p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl max-w-[240px] grid grid-cols-6 gap-1 h-40 overflow-y-auto z-50">
+                              {emojis.map((emoji) => (
+                                <button
+                                  key={emoji}
+                                  type="button"
+                                  onClick={() => {
+                                    setInput(prev => prev + emoji);
+                                    setShowEmojiPicker(false);
+                                  }}
+                                  className="w-7 h-7 flex items-center justify-center text-md hover:bg-slate-100 dark:hover:bg-slate-750 rounded-lg"
+                                >
+                                  {emoji}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        <button type="submit" disabled={!input.trim()} className="w-10 h-10 bg-indigo-600 text-white rounded-2xl flex items-center justify-center active:scale-95 transition-transform flex-shrink-0 disabled:opacity-50">
                             <i className="fas fa-paper-plane text-xs"></i>
                         </button>
                     </form>

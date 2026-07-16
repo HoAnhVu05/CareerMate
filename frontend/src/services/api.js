@@ -512,6 +512,17 @@ class CareerMateAPI {
     return response.data;
   }
 
+  async uploadChatImage(conversationId, file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await this.client.post(`/messaging/conversations/${conversationId}/upload-image`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  }
+
   async sendMessageToUser(recipientId, content) {
     const response = await this.client.post(`/messaging/messages?recipientId=${recipientId}`, { content });
     return response.data;

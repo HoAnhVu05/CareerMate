@@ -77,12 +77,32 @@ export default function Applications() {
   const getStatusBadge = (status) => {
     const configs = {
       PENDING: {
-        label: 'Đang chờ',
+        label: 'Đang chờ duyệt',
         icon: 'fa-clock',
         className: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-700'
       },
+      VIEWED: {
+        label: 'Đã xem hồ sơ',
+        icon: 'fa-eye',
+        className: 'bg-cyan-100 text-cyan-850 dark:bg-cyan-900/30 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-700'
+      },
+      SHORTLISTED: {
+        label: 'Hồ sơ phù hợp (Shortlist)',
+        icon: 'fa-user-check',
+        className: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 border border-purple-200 dark:border-purple-700'
+      },
+      INTERVIEW: {
+        label: 'Lên lịch phỏng vấn',
+        icon: 'fa-calendar-alt',
+        className: 'bg-blue-100 text-blue-850 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-700'
+      },
+      OFFERED: {
+        label: 'Trúng tuyển (Offer)',
+        icon: 'fa-gift',
+        className: 'bg-emerald-100 text-emerald-800 dark:bg-green-900/30 dark:text-green-400 border border-emerald-250 dark:border-green-700'
+      },
       ACCEPTED: {
-        label: 'Được nhận',
+        label: 'Đã nhận việc',
         icon: 'fa-check-circle',
         className: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-700'
       },
@@ -92,7 +112,7 @@ export default function Applications() {
         className: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-700'
       },
       WITHDRAWN: {
-        label: 'Đã hủy',
+        label: 'Đã rút hồ sơ',
         icon: 'fa-ban',
         className: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400 border border-gray-200 dark:border-gray-700'
       }

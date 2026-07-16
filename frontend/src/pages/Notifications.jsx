@@ -60,13 +60,32 @@ export default function Notifications() {
       await handleMarkAsRead(notification.id);
     }
 
-    if (notification.linkUrl) {
-      const url = notification.linkUrl;
-      if (url.includes('?')) {
-        const [path, search] = url.split('?');
+    let targetUrl = notification.linkUrl;
+    if (!targetUrl && notification.relatedEntityType && notification.relatedEntityId) {
+      if (notification.relatedEntityType === 'APPLICATION') {
+        if (notification.type === 'NEW_APPLICATION') {
+          targetUrl = '/recruiter/applicants';
+        } else {
+          targetUrl = '/student/applications';
+        }
+      } else if (notification.relatedEntityType === 'JOB') {
+        targetUrl = '/student/jobs';
+      } else if (notification.relatedEntityType === 'CHALLENGE') {
+        targetUrl = `/student/challenges/${notification.relatedEntityId}`;
+      } else if (notification.relatedEntityType === 'CONVERSATION') {
+        // Find if user is recruiter to choose route
+        const path = window.location.pathname;
+        const prefix = path.startsWith('/recruiter') ? '/recruiter' : (path.startsWith('/admin') ? '/admin' : '/student');
+        targetUrl = `${prefix}/messages?conversationId=${notification.relatedEntityId}`;
+      }
+    }
+
+    if (targetUrl) {
+      if (targetUrl.includes('?')) {
+        const [path, search] = targetUrl.split('?');
         navigate({ pathname: path, search: `?${search}` });
       } else {
-        navigate(url);
+        navigate(targetUrl);
       }
     }
   };

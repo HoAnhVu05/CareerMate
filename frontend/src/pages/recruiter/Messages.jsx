@@ -22,6 +22,9 @@ export default function Messages() {
   const [showUserInfoModal, setShowUserInfoModal] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [activeTab, setActiveTab] = useState('messages');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const fileInputRef = useRef(null);
+  const emojis = ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐', '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑', '🤠', '😈', '👿', '👹', '👺', '🤡', '💩', '👻', '💀', '☠️', '👽', '👾', '🤖', '🎃', '😺', '😸', '😹', '😻', '😼', '😽', '🙀', '😿', '😾'];
   const [studentList, setStudentList] = useState([]);
   const [loadingStudents, setLoadingStudents] = useState(false);
   const messagesEndRef = useRef(null);
@@ -272,6 +275,38 @@ export default function Messages() {
   const handleConversationClick = async (conversation) => {
     setSelectedConversation(conversation);
     await loadMessages(conversation.id);
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !selectedConversation) return;
+
+    const tempId = 'temp-' + Date.now();
+    const tempMsg = {
+      id: tempId,
+      content: '[IMAGE]loading',
+      sender: user,
+      createdAt: new Date().toISOString(),
+      isTemp: true
+    };
+    setMessages(prev => [...prev, tempMsg]);
+
+    try {
+      const res = await api.uploadChatImage(selectedConversation.id, file);
+      const imageUrl = res.url;
+      const sentMsg = await api.sendMessage(selectedConversation.id, `[IMAGE]${imageUrl}`);
+      
+      setMessages(prev => prev.map(m => m.id === tempId ? {
+        id: sentMsg.id,
+        content: `[IMAGE]${imageUrl}`,
+        sender: user,
+        createdAt: sentMsg.createdAt || new Date().toISOString()
+      } : m));
+    } catch (error) {
+      console.error('Image upload failed:', error);
+      alert('Không thể gửi ảnh');
+      setMessages(prev => prev.filter(m => m.id !== tempId));
+    }
   };
 
   const handleSend = async (e) => {
@@ -722,7 +757,24 @@ export default function Messages() {
                             : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-100 dark:border-gray-700 rounded-2xl rounded-tl-sm'
                             }`}
                         >
-                          <div className="whitespace-pre-wrap break-words">{msg.content}</div>
+                          <div className="whitespace-pre-wrap break-words">
+                            {msg.content.startsWith('[IMAGE]') ? (
+                              msg.content === '[IMAGE]loading' ? (
+                                <div className="flex items-center gap-2 py-1 text-xs font-semibold text-slate-300">
+                                  <i className="fas fa-circle-notch fa-spin text-blue-500"></i> Đang tải ảnh...
+                                </div>
+                              ) : (
+                                <img
+                                  src={api.getFileUrl(msg.content.substring(7))}
+                                  alt="Gửi ảnh"
+                                  className="max-w-xs rounded-xl cursor-pointer hover:opacity-90 transition-opacity shadow-sm"
+                                  onClick={() => window.open(api.getFileUrl(msg.content.substring(7)), '_blank')}
+                                />
+                              )
+                            ) : (
+                              msg.content
+                            )}
+                          </div>
                           <div className={`text-[10px] mt-1 font-medium flex items-center justify-end gap-1 ${isMyMessage ? 'text-blue-100' : 'text-gray-400'}`}>
                             {formatTime(msg.createdAt)}
                             {isMyMessage && <i className="fas fa-check-double text-[9px] opacity-70"></i>}
@@ -758,12 +810,20 @@ export default function Messages() {
               {/* Input Area */}
               <div className="p-4 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700/50">
                 <form onSubmit={handleSend} className="relative flex items-end gap-2 bg-gray-50 dark:bg-gray-800/50 p-2 rounded-3xl border border-gray-200 dark:border-gray-700 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleImageUpload}
+                    accept="image/*"
+                    className="hidden"
+                  />
                   <button
                     type="button"
+                    onClick={() => fileInputRef.current?.click()}
                     className="w-10 h-10 rounded-full text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors flex items-center justify-center flex-shrink-0"
-                    title="Đính kèm file (Demo)"
+                    title="Gửi hình ảnh"
                   >
-                    <i className="fas fa-paperclip"></i>
+                    <i className="fas fa-image"></i>
                   </button>
 
                   <textarea
@@ -782,13 +842,32 @@ export default function Messages() {
                     style={{ height: 'auto', minHeight: '44px' }}
                   />
 
-                  <div className="flex items-center gap-1 pb-1">
+                  <div className="flex items-center gap-1 pb-1 relative">
                     <button
                       type="button"
+                      onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                       className="w-9 h-9 rounded-full text-gray-400 hover:text-yellow-500 hover:bg-yellow-50 dark:hover:bg-gray-700 transition-colors flex items-center justify-center"
                     >
                       <i className="far fa-smile"></i>
                     </button>
+
+                    {showEmojiPicker && (
+                      <div className="absolute bottom-12 right-0 p-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-xl max-w-[280px] grid grid-cols-7 gap-1.5 h-48 overflow-y-auto z-50">
+                        {emojis.map((emoji) => (
+                          <button
+                            key={emoji}
+                            type="button"
+                            onClick={() => {
+                              setInput(prev => prev + emoji);
+                              setShowEmojiPicker(false);
+                            }}
+                            className="w-8 h-8 flex items-center justify-center text-lg hover:bg-slate-100 dark:hover:bg-gray-750 rounded-lg active:scale-90 transition-transform"
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                     <button
                       type="submit"
                       disabled={loading || !input.trim()}
