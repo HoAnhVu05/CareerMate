@@ -113,19 +113,6 @@ export default function ArticleDetail({ articleId: propId, isModal, onClose }) {
   const [showAuthorModal, setShowAuthorModal] = useState(false);
   const reactionCloseTimeoutRef = useRef(null);
 
-  // Use native Unicode emoji — no CDN dependency, always renders
-  const getReactionEmoji = (type) => {
-    const emojis = {
-      LIKE: '👍',
-      LOVE: '❤️',
-      HAHA: '😂',
-      WOW: '😮',
-      SAD: '😢',
-      ANGRY: '😡'
-    };
-    return emojis[type] || '👍';
-  };
-
   const handleMouseEnter = () => {
     if (reactionCloseTimeoutRef.current) {
       clearTimeout(reactionCloseTimeoutRef.current);
