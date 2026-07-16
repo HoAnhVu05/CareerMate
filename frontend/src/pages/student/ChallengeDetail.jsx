@@ -15,6 +15,7 @@ export default function ChallengeDetail() {
   const [showBadgeModal, setShowBadgeModal] = useState(false);
   const [earnedBadge, setEarnedBadge] = useState(null);
   const [latestResult, setLatestResult] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     loadChallenge();
@@ -58,12 +59,14 @@ export default function ChallengeDetail() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) return;
     console.log('=== HANDLE SUBMIT STARTED ===');
     console.log('Challenge ID:', id);
     console.log('Submission:', submission);
     console.log('Current challenge:', challenge);
     
     try {
+      setSubmitting(true);
       console.log('Calling API participateChallenge...');
       const result = await api.participateChallenge(id, submission);
       setLatestResult(result);
@@ -108,6 +111,8 @@ export default function ChallengeDetail() {
       console.error('Error response:', error.response);
       console.error('Error message:', error.message);
       alert('Lỗi: ' + (error.response?.data?.error || 'Không thể gửi bài làm'));
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -230,9 +235,18 @@ export default function ChallengeDetail() {
                 placeholder="https://..."
               />
             </div>
-            <button type="submit" className="btn-primary">
-              <i className="fas fa-paper-plane mr-2"></i>
-              Gửi bài làm
+             <button type="submit" disabled={submitting} className="btn-primary flex items-center justify-center gap-2 min-w-[120px]">
+              {submitting ? (
+                <>
+                  <i className="fas fa-spinner fa-spin"></i>
+                  <span>Đang chấm bài...</span>
+                </>
+              ) : (
+                <>
+                  <i className="fas fa-paper-plane"></i>
+                  <span>Gửi bài làm</span>
+                </>
+              )}
             </button>
           </form>
         </div>
@@ -374,6 +388,27 @@ export default function ChallengeDetail() {
                 Xem huy hiệu của tôi
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* Submitting Loading Overlay */}
+      {submitting && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center z-50 animate-fade-in">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-sm w-full mx-4 text-center border border-gray-100 dark:border-gray-700 shadow-2xl flex flex-col items-center">
+            <div className="relative w-20 h-20 mb-6">
+              {/* Outer pulsing ring */}
+              <div className="absolute inset-0 rounded-full border-4 border-blue-100 dark:border-blue-900/30 animate-pulse"></div>
+              {/* Inner spinning loader */}
+              <div className="absolute inset-0 rounded-full border-4 border-t-blue-600 border-r-transparent border-b-transparent border-l-transparent animate-spin"></div>
+              {/* Central robot icon */}
+              <div className="absolute inset-0 flex items-center justify-center text-blue-600 dark:text-blue-400 text-2xl animate-pulse">
+                <i className="fas fa-robot"></i>
+              </div>
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Đang chấm điểm...</h3>
+            <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
+              Hệ thống trí tuệ nhân tạo (AI) đang phân tích ngữ nghĩa và đánh giá bài làm của bạn. Quá trình này có thể mất vài giây.
+            </p>
           </div>
         </div>
       )}

@@ -24,8 +24,8 @@ export default function MobileChallenges() {
             ]);
 
             if (activeTab === 'EXPLORE') {
-                const completedIds = new Set(my.filter(p => p.status === 'COMPLETED').map(p => p.challenge?.id));
-                setChallenges(all.filter(c => !completedIds.has(c.id)));
+                const myMap = new Map(my.map(p => [p.challenge?.id, p]));
+                setChallenges(all.map(c => ({ ...c, participation: myMap.get(c.id) })));
             } else if (activeTab === 'MINE') {
                 setChallenges(my.map(p => ({ ...p.challenge, participation: p })));
             } else {

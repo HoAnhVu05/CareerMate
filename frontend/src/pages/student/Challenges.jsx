@@ -54,10 +54,7 @@ export default function Challenges() {
           .filter(Boolean)
       );
 
-      const available = (Array.isArray(allChallenges) ? allChallenges : [])
-        .filter(c => !completedIds.has(c.id));
-
-      setChallenges(available);
+      setChallenges(Array.isArray(allChallenges) ? allChallenges : []);
 
       // Calculate stats
       const points = (Array.isArray(myParticipations) ? myParticipations : [])
