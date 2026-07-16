@@ -78,8 +78,13 @@ export default function MobileMessages() {
         try {
             const res = await api.uploadChatImage(selectedConv.id, file);
             const imageUrl = res.url;
-            await api.sendMessage(selectedConv.id, `[IMAGE]${imageUrl}`);
-            loadMessages(selectedConv.id, true);
+            const imageContent = `[IMAGE]${imageUrl}`;
+
+            // Update temp BEFORE sendMessage so WS dedup filter can match and remove it
+            setMessages(prev => prev.map(m => m.id === tempId ? { ...m, content: imageContent } : m));
+
+            await api.sendMessage(selectedConv.id, imageContent);
+            // WS broadcast will replace the temp message automatically via dedup logic
         } catch (error) {
             console.error('Image upload failed:', error);
             alert('Không thể gửi ảnh');

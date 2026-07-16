@@ -294,14 +294,13 @@ export default function Messages() {
     try {
       const res = await api.uploadChatImage(selectedConversation.id, file);
       const imageUrl = res.url;
-      const sentMsg = await api.sendMessage(selectedConversation.id, `[IMAGE]${imageUrl}`);
-      
-      setMessages(prev => prev.map(m => m.id === tempId ? {
-        id: sentMsg.id,
-        content: `[IMAGE]${imageUrl}`,
-        sender: user,
-        createdAt: sentMsg.createdAt || new Date().toISOString()
-      } : m));
+      const imageContent = `[IMAGE]${imageUrl}`;
+
+      // Update temp BEFORE sendMessage so WS dedup filter can match and remove it
+      setMessages(prev => prev.map(m => m.id === tempId ? { ...m, content: imageContent } : m));
+
+      await api.sendMessage(selectedConversation.id, imageContent);
+      // WS broadcast will replace the temp message automatically via dedup logic
     } catch (error) {
       console.error('Image upload failed:', error);
       alert('Không thể gửi ảnh');
